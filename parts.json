@@ -15,7 +15,9 @@
       "title": "Part II - Structuring programs",
       "chapters": [
         "ch07-functions",
-        "ch08-files"
+        "ch08-files",
+        "ch09-error-handling",
+        "ch10-structures"
       ]
     }
   ]
