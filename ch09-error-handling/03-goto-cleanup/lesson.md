@@ -56,7 +56,7 @@ The normal path also falls through both labels. `result = 0` runs first, and the
 
 `goto` has a poor reputation, because it can jump anywhere and make a program hard to follow. In this pattern it jumps only forward, to labels at the bottom of the same function. That keeps the flow easy to read, and it puts every release in one place. The alternative is to repeat the close calls at each failure point, where a later change can easily leave one out.
 
-Use `goto` for this cleanup pattern, and nowhere else in the course. Other uses are rarely needed, and the labelled cleanup is the form C programmers recognize.
+Use `goto` for this cleanup pattern, and nowhere else in the course. Other uses are rarely needed, and the labeled cleanup is the form C programmers recognize.
 
 ### Keeping the result
 
@@ -98,4 +98,4 @@ Then add a third `copy_file` call that copies `data/source.txt` to `data/copy2.t
 
 ---
 
-A function that opens resources can release them on every exit path with a labelled block at its end. The summary covers the chapter, and the homework uses the same pattern on its own.
+A function that opens resources can release them on every exit path with a labeled block at its end. The summary covers the chapter, and the homework uses the same pattern on its own.

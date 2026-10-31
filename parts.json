@@ -17,7 +17,9 @@
         "ch07-functions",
         "ch08-files",
         "ch09-error-handling",
-        "ch10-structures"
+        "ch10-structures",
+        "ch11-structures-with-behavior",
+        "ch12-composition-and-polymorphism"
       ]
     }
   ]
