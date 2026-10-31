@@ -1,7 +1,0 @@
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/cjson.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/lesson_core.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/lesson-list.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/router-test.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/lesson-runner.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/edit_cache.dir
-C:/Development/training/training-c/lesson-runner/build/CMakeFiles/rebuild_cache.dir
