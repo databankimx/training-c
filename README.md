@@ -190,7 +190,7 @@ Each chapter folder holds its sections, and each section holds its steps. A step
 | Part | Chapters | Status |
 |---|---|---|
 | I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
-| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 12 (functions, files, error handling, structures, structures with behavior, composition and polymorphism) are written |
+| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 14 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files, containers) are written |
 | III - Additional topics | Dynamic memory and data structures, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | Planned |
 | Final project | A calculator, in two tracks: a core and bonus items | Planned |
 
@@ -223,6 +223,8 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 10 written: structures as variables (typedef and fixed-size text members), structures in functions (copies and pointers), initializing structures (C has no member defaults, so a function holds them), the summary, and two homework exercises |
 | 10/30/2026 | Chapter 11 written as Structures with Behavior: structures and functions, functions that act on an object, init functions, hiding fields with an opaque type in a header, the summary, and two homework exercises (a bank account and a counter). C has no classes, so the class syntax is replaced by these techniques |
 | 10/30/2026 | Chapter 12 written as Composition and Polymorphism: embedding a base structure, several parts and protection (C has no protected level), polymorphism with function pointers, the summary, and two homework exercises (shapes and employee pay). C has no inheritance or virtual functions, so these are replaced by composition and function pointers |
+| 10/30/2026 | Chapter 13 written as Headers and Multiple Files: header and source, include guards, combining modules across seven files, the summary, and two homework exercises (a library and temperature utilities). The chapter closes Part II, since the C course's Part II covers chapters 7 to 13 |
+| 10/30/2026 | Chapter 14 written as Containers: a growable vector and a hash table built from malloc, choosing between arrays, vectors, hash tables, and sorted arrays, the summary, and two homework exercises (a grade book and a word tally). C's standard library has no containers, so the chapter builds them. The dynamic-memory step was added to Chapter 5, with a discussion of double free and use after free as security flaws |
 
 ---
 

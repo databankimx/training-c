@@ -8,6 +8,8 @@ typedef struct {
 } Car;
 
 void car_init(Car *car, const char *brand, const char *model, int year) {
+    /* UNSAFE PATH: strcpy does not check sizes. The caller must pass a brand of at most 31 characters,
+       or the copy writes past the end of car->brand. Use snprintf with sizeof for untrusted input. */
     strcpy(car->brand, brand);
     strcpy(car->model, model);
     car->year = year;

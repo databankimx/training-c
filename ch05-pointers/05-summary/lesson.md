@@ -10,6 +10,8 @@ This chapter covered how a pointer refers to a variable without copying it, and 
 * **Adding to a pointer moves it by elements.** `first + 2` is two elements along, whatever the size of the element.
 * **A function that receives an array gets a pointer.** Inside the function, `sizeof` gives the size of the pointer, so the length must be passed in.
 * **A string is a pointer to its first character.** `const char *` is the usual form for text the program only reads. An array of strings is an array of `const char *`.
+* **Heap memory lasts until it's freed.** `malloc` and `realloc` return a pointer or `NULL`, `free` releases the block, and every allocation needs one matching free.
+* **Double free and use after free are security flaws.** Reusing or freeing memory twice can let an attacker's data take the place of the program's own, so set pointers to `NULL` after `free` and free each block once.
 
 ### Check your understanding
 

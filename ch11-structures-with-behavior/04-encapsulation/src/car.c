@@ -16,6 +16,8 @@ Car *car_create(const char *brand, const char *model, int year) {
     if (car == NULL) {
         return NULL;
     }
+    /* UNSAFE PATH: strcpy does not check sizes. The brand and model must be at most 31 characters,
+       or the copy writes past the end of the member. Use snprintf with sizeof for untrusted input. */
     strcpy(car->brand, brand);
     strcpy(car->model, model);
     car->year = 0;

@@ -9,6 +9,7 @@ typedef struct {
 
 Car make_car(const char *brand, const char *model, int year) {
     Car car;
+    /* UNSAFE PATH: strcpy does not check sizes. brand and model must be at most 31 characters. */
     strcpy(car.brand, brand);
     strcpy(car.model, model);
     car.year = year;
