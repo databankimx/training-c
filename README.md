@@ -189,7 +189,7 @@ Each chapter folder holds its sections, and each section holds its steps. A step
 
 | Part | Chapters | Status |
 |---|---|---|
-| I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 3 are written |
+| I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
 | II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | Planned |
 | III - Additional topics | Dynamic memory and data structures, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | Planned |
 | Final project | A calculator, in two tracks: a core and bonus items | Planned |
@@ -214,6 +214,9 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 2 written: variables, arithmetic, strings, user input, command-line arguments, the summary, and two homework exercises |
 | 10/30/2026 | Chapter 3 written: booleans, logical operators, if statements, switch, the summary, and three homework exercises |
 | 10/30/2026 | Chapters 1 to 3 checked against the C++ course. Lessons restored to full length where the C versions had dropped material. Homework rewritten to read input from the user, as the C++ exercises do, and the summaries cover every point of the C++ summaries |
+| 10/30/2026 | Chapter 4 written: declaring arrays, initializing arrays, multidimensional arrays, the summary, and two homework exercises. Arrays of strings are deferred to the pointers chapter, and the C versions use char arrays or int arrays where the C++ versions use strings |
+| 10/30/2026 | Chapter 5 written: pointers, pointers and arrays, the summary, and two homework exercises. C has no references, so the chapter covers pointers only. The homework does its swaps inline, since functions come in Chapter 7 |
+| 10/30/2026 | Chapter 6 written: while loops, for loops, looping over arrays (C's replacement for the range-based loop), break and continue, Battleship, the summary, and two homework exercises. Chapter 5's folder was renamed to ch05-pointers to match its content |
 
 ---
 

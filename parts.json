@@ -5,7 +5,10 @@
       "chapters": [
         "ch01-getting-started",
         "ch02-variables-and-input",
-        "ch03-decisions"
+        "ch03-decisions",
+        "ch04-arrays",
+        "ch05-pointers",
+        "ch06-loops"
       ]
     }
   ]
