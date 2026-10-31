@@ -1,3 +1,0 @@
-C:/Development/training/training-c/.lesson-runner/work/02-banner/build/CMakeFiles/program.dir
-C:/Development/training/training-c/.lesson-runner/work/02-banner/build/CMakeFiles/edit_cache.dir
-C:/Development/training/training-c/.lesson-runner/work/02-banner/build/CMakeFiles/rebuild_cache.dir

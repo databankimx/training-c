@@ -1,3 +1,0 @@
-C:/Development/training/training-c/.lesson-runner/work/01-unit-converter/build/CMakeFiles/program.dir
-C:/Development/training/training-c/.lesson-runner/work/01-unit-converter/build/CMakeFiles/edit_cache.dir
-C:/Development/training/training-c/.lesson-runner/work/01-unit-converter/build/CMakeFiles/rebuild_cache.dir

@@ -1,3 +1,0 @@
-C:/Development/training/training-c/.lesson-runner/work/05-command-line-arguments/build/CMakeFiles/program.dir
-C:/Development/training/training-c/.lesson-runner/work/05-command-line-arguments/build/CMakeFiles/edit_cache.dir
-C:/Development/training/training-c/.lesson-runner/work/05-command-line-arguments/build/CMakeFiles/rebuild_cache.dir

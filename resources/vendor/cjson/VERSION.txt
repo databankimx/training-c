@@ -1,1 +1,0 @@
-cJSON v1.7.19 (source, MIT)
