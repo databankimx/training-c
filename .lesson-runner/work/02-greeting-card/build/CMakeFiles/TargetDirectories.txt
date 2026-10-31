@@ -1,0 +1,3 @@
+C:/Development/training/training-c/.lesson-runner/work/02-greeting-card/build/CMakeFiles/program.dir
+C:/Development/training/training-c/.lesson-runner/work/02-greeting-card/build/CMakeFiles/edit_cache.dir
+C:/Development/training/training-c/.lesson-runner/work/02-greeting-card/build/CMakeFiles/rebuild_cache.dir

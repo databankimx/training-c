@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Development/training/training-c/lesson-runner/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

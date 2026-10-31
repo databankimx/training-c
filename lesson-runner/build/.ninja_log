@@ -1,0 +1,20 @@
+# ninja log v7
+45	347	8151058424630145	CMakeFiles/lesson-list.dir/tools/lesson_list.c.obj	167ffd637f02e4e
+18	563	8151058424360193	CMakeFiles/cjson.dir/C_/Development/training/training-c/resources/vendor/cjson/cJSON.c.obj	ab5261257b8a5c3d
+564	949	8151058429810311	libcjson.a	d9848fc505ef1f96
+21	1190	8151059194321471	CMakeFiles/lesson_core.dir/host/discovery.c.obj	b17f0ad87a21c528
+1224	1555	8151185395420252	liblesson_core.a	c5f20546a0111b1b
+1555	2041	8151185398727787	lesson-list.exe	9d977fb4f51e2a1c
+7	464	8151190047065867	build.ninja	4076f049adb6cf28
+7	464	8151190046922901	C:/Development/training/training-c/lesson-runner/build/cmake_install.cmake	4076f049adb6cf28
+13	1129	8151182519719212	CMakeFiles/lesson_core.dir/host/runner.c.obj	e411ad995e98811
+46	1431	8151184066966408	CMakeFiles/router-test.dir/tools/router_test.c.obj	72e5fcd8ee002e39
+17	1434	8151184066666403	CMakeFiles/lesson_core.dir/host/commands.c.obj	6667b2a76d33fab2
+11	1222	8151185383286246	CMakeFiles/lesson_core.dir/host/router.c.obj	972c359a6faa4c52
+1565	2064	8151185398817761	router-test.exe	f4e1545315fbaf75
+11	1152	8151187363843135	CMakeFiles/lesson-runner.dir/host/app.c.obj	ec41cabd1057761a
+1154	1863	8151187375270693	lesson-runner.exe	346ee0a62250835a
+13	381	8151190082824558	CMakeFiles/lesson-runner.dir/host/app.rc.obj	6f1404c276c93051
+382	1171	8151190086509666	lesson-runner.exe	3d6e40c6b71a9d96
+15	1319	8151190734737566	CMakeFiles/lesson-runner.dir/host/app.c.obj	ec41cabd1057761a
+1320	1953	8151190747781292	lesson-runner.exe	3d6e40c6b71a9d96

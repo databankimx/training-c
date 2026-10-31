@@ -1,0 +1,14 @@
+read_commands {"path": "C:\\Development\\training\\training-cpp\\ch01-getting-started\\01-hello-world"}
+read_lesson {"path": "C:\\Development\\training\\training-cpp\\ch01-getting-started\\01-hello-world"}
+list_source_files {"path": "C:\\Development\\training\\training-cpp\\ch16-searching-and-sorting\\03-bubble-sort"}
+read_source {"path": "C:\\Development\\training\\training-cpp\\ch16-searching-and-sorting\\03-bubble-sort", "file": "main.cpp"}
+read_source {"path": "C:\\Development\\training\\training-cpp\\ch16-searching-and-sorting\\03-bubble-sort", "file": "../secret.cpp"}
+set_lesson {"title": "Test", "text": "Hello"}
+get_lesson {}
+set_theme {"light": true}
+get_theme {}
+navigate_to {"name": "01-hello-world"}
+open_visualizer {"path": "C:\\Development\\training\\training-cpp\\ch16-searching-and-sorting\\03-bubble-sort"}
+open_external {"url": "file:///C:/Windows"}
+run_step {"path": "C:\\Development\\training\\training-cpp\\ch01-getting-started\\01-hello-world"}
+unknown_command {}

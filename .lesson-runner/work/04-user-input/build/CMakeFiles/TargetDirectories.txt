@@ -1,0 +1,3 @@
+C:/Development/training/training-c/.lesson-runner/work/04-user-input/build/CMakeFiles/program.dir
+C:/Development/training/training-c/.lesson-runner/work/04-user-input/build/CMakeFiles/edit_cache.dir
+C:/Development/training/training-c/.lesson-runner/work/04-user-input/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>C Training</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="main.js" defer></script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img class="logo" src="logo.svg" alt="" width="22" height="22" />
+          <span>C Training</span>
+        </div>
+        <div id="chapters" class="chapters"></div>
+        <div id="split-tree" class="splitter horizontal" title="Drag to resize"></div>
+        <div class="steps-heading">Steps</div>
+        <div id="steps" class="steps"></div>
+      </aside>
+
+      <div id="split-sidebar" class="splitter vertical" title="Drag to resize"></div>
+
+      <section class="main">
+        <header class="header">
+          <div class="heading">
+            <h1 id="title">Select a step</h1>
+            <div id="subtitle" class="subtitle"></div>
+          </div>
+          <div class="actions">
+            <div class="theme-group" title="Light or dark theme">
+              <span id="moon" class="theme-icon"></span>
+              <label for="theme" class="theme-switch">
+                <input id="theme" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span id="sun" class="theme-icon"></span>
+            </div>
+            <button id="run" class="primary" disabled>&#9654; Run</button>
+            <button id="test" class="primary hidden" disabled>&#10003; Test</button>
+          </div>
+        </header>
+
+        <div class="output-pane">
+          <div class="pane-bar">
+            <span class="pane-label">OUTPUT</span>
+            <span class="pane-actions">
+              <button id="copy-output" class="icon-button" data-tip="Copy output" aria-label="Copy output"></button>
+              <button id="clear" class="icon-button" data-tip="Clear output" aria-label="Clear output"></button>
+            </span>
+          </div>
+          <pre id="output" class="output"></pre>
+          <form id="input-form" class="input-row">
+            <label for="input">input:</label>
+            <input id="input" type="text" disabled />
+            <button id="send" type="submit" disabled>Send</button>
+            <button id="stop" type="button" class="link" disabled>Stop (Esc)</button>
+          </form>
+        </div>
+
+        <div id="split-source" class="splitter horizontal" title="Drag to resize"></div>
+
+        <div class="source-pane">
+          <div class="tabs">
+            <button class="tab active" data-tab="source">Source</button>
+            <button class="tab" data-tab="lesson">Lesson</button>
+            <span class="tabs-right">
+              <span id="modified" class="modified hidden">modified</span>
+              <button id="reset" class="link">Reset</button>
+              <button id="popout" class="icon-button" data-tip="Open the lesson in its own window" aria-label="Open the lesson in its own window"></button>
+              <button id="copy-source" class="icon-button" data-tip="Copy the text of this tab" aria-label="Copy the text of this tab"></button>
+            </span>
+          </div>
+
+          <div id="spoiler" class="spoiler hidden">
+            <p>Give this exercise a try before you look at the example. Write your own program in your project, and come back when you're ready.</p>
+            <p>If you get stuck, you can show the example. It's a spoiler, so you may learn more by trying first.</p>
+            <button id="reveal" class="primary">Show example (spoiler)</button>
+          </div>
+
+          <div id="source-view" class="editor-area">
+            <pre id="gutter" class="gutter" aria-hidden="true"></pre>
+            <div class="code-area">
+              <pre id="highlight" class="highlight" aria-hidden="true"></pre>
+              <textarea aria-label="Editor" id="editor" class="editor" spellcheck="false" wrap="off"></textarea>
+            </div>
+          </div>
+
+          <div id="lesson" class="lesson markdown hidden"></div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

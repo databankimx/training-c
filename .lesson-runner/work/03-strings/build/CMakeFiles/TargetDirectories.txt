@@ -1,0 +1,3 @@
+C:/Development/training/training-c/.lesson-runner/work/03-strings/build/CMakeFiles/program.dir
+C:/Development/training/training-c/.lesson-runner/work/03-strings/build/CMakeFiles/edit_cache.dir
+C:/Development/training/training-c/.lesson-runner/work/03-strings/build/CMakeFiles/rebuild_cache.dir

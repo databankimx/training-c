@@ -1,0 +1,11 @@
+{
+  "parts": [
+    {
+      "title": "Part I - Basics",
+      "chapters": [
+        "ch01-getting-started",
+        "ch02-variables-and-input"
+      ]
+    }
+  ]
+}

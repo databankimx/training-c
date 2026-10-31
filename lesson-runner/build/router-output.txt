@@ -1,0 +1,30 @@
+reply read_commands ["run"]
+reply read_lesson "## Hello, world\n\nEvery programming course starts with a program that prints a message. It's the smoke test of the whole setup: if this runs, your compiler, your build tools, and the runner are all on speaking terms. This one prints two lines, so you can also see how a C++ program is put together.\n\nHere's the program, in `src/main.cpp`:\n\n```cpp\n#include <iostream>\n\nint main() {\n    std::cout << \"Hello World!\\n\";\n    std::cout << \"I am learning C++\";\n\n    return 0;\n}\n```\n\nPress **Run**, or press F5. The Output pane should look something like this:\n\n```\nConfiguring 01-hello-world...\nBuilding 01-hello-world...\nRunning program.exe\n\nHello World!\nI am learning C++\n— Finished with exit code 0 —\n```\n\nThe first line is the important one to understand. C++ is a compiled language, which means the text in `main.cpp` isn't the program. It's a set of instructions that a compiler turns into one. Running the program happens in three stages, and the runner shows you each one:\n\n* **Configuring** is CMake reading the step's `CMakeLists.txt`, and working out how to build it. This only changes when the build setup changes, so it's quick.\n* **Building** is the compiler turning `main.cpp` into a program. The first build can take several seconds, and later ones are much faster, because only the changed files are compiled again.\n* **Running** starts the program that the build produced.\n\nThe blank line before the program's output is there on purpose. It separates the build from what your program prints, so the two don't run together.\n\nAt the end, the runner shows the exit code. Zero means the program finished without a problem.\n\n### What the program is made of\n\nEach part of the program has a job, and you'll meet every one of them again.\n\n* `#include <iostream>` brings in the input and output library. Without it, `std::cout` doesn't exist. The angle brackets tell the compiler to look in the standard library.\n* `int main()` is where the program starts. Every C++ program has exactly one `main`, and the operating system always calls it first.\n* `std::cout << \"...\"` writes text to the output. The `<<` operator sends each piece to `cout`, which stands for character output. You can chain as many pieces as you like.\n* `\\n` is a newline. Without it, the second line would follow the first on the same line, which is why the first line has one and the second doesn't.\n* `return 0;` tells the operating system the program finished successfully. A non-zero value means something went wrong, and that matters when scripts run your program.\n\nThe `std::` in front of `cout` looks like clutter at first, but the next step explains why it's there.\n\n---\n\n### Quiz\n\n*These questions are written for this course.*\n\n````quiz\nWhich header brings in `std::cout`?\n○ <stdio.h>\n→ Not quite. <stdio.h> is the C library. std::cout comes from the C++ library.\n◉ <iostream>\n→ Yes. <iostream> provides std::cout, along with other input and output objects.\n````\n\n---\n\n### Try it in the runner\n\nReplace `\\n` in the first line with `std::endl`, and press **Run** again. The output looks the same, and it's worth knowing why. `std::endl` writes a newline and also flushes the output, which means it pushes the text out right away. `\\n` only writes the newline. For a program like this, either one is fine.\n\n---\n\nAnd that's your first C++ program, built and run by the same tools that the professionals use. Nothing about it was magic, and every line had a reason to be there.\n"
+reply list_source_files []
+error read_source Not a source file: main.cpp
+error read_source Not a source file: ../secret.cpp
+event lesson-updated {"title":"Test","text":"Hello"}
+reply set_lesson null
+reply get_lesson {"title":"Test","text":"Hello"}
+event theme-changed true
+reply set_theme null
+reply get_theme true
+event goto "01-hello-world"
+reply navigate_to null
+reply open_visualizer null
+error open_external Not opening file:///C:/Windows
+reply run_step null
+error unknown_command Unknown command: unknown_command
+event run-output {"stream":"stdout","text":"Configuring...\n"}
+event run-output {"stream":"stdout","text":"-- Configuring done (0.5s)\n"}
+event run-output {"stream":"stdout","text":"-- Generating done (0.1s)\n"}
+event run-output {"stream":"stderr","text":"CMake Warning:\n  Manually-specified variables were not used by the project:\n\n    CMAKE_C_COMPILER\n\n"}
+event run-output {"stream":"stderr","text":"\n"}
+event run-output {"stream":"stdout","text":"-- Build files have been written to: C:/Development/training/training-cpp/.lesson-runner/work/01-hello-world/build\n"}
+event run-output {"stream":"stdout","text":"Building...\n"}
+event run-output {"stream":"stdout","text":"ninja: no work to do.\r\n"}
+event run-output {"stream":"stdout","text":"Running program.exe\n"}
+event run-output {"stream":"stdout","text":"\n"}
+event run-output {"stream":"stdout","text":"Hello World!\r\nI am learning C++"}
+event output-files []
+event run-finished {"code":0}
