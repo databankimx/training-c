@@ -1,3 +1,5 @@
 # ninja log v7
 19	227	8151203226513180	CMakeFiles/program.dir/src/main.c.obj	c4ef693b75666faa
 230	616	8151203228626502	program.exe	642ef649c87c6cba
+10	206	8151225829018322	CMakeFiles/program.dir/src/main.c.obj	c4ef693b75666faa
+207	567	8151225830994286	program.exe	642ef649c87c6cba

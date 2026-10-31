@@ -1,29 +1,30 @@
 ## Homework: Greeting card
 
-Write a program that asks who the card is for, reads the name, and prints a birthday greeting with a count of the letters in the name.
+Write a program that asks for a person's name and age, and then prints a short greeting.
 
 The program should:
 
-* ask `Who is the card for? ` and flush the output so the question appears before the program waits
-* read the name as a whole line with `fgets`, and remove the newline at its end
-* print `Happy birthday, ` followed by the name and an exclamation mark
-* print `That's ` followed by the number of letters, then ` letters.`
+* ask for the name first, with the prompt `What is your name? `, and read the whole line with `fgets`
+* ask for the age second, with the prompt `How old are you? `, and read it as an `int`
+* print a greeting with the name, and a sentence saying how old the person will be next year, like this:
+
+```
+Hello, Ada.
+Next year you will be 37.
+```
+
+Flush the output after both prompts, with `fflush(stdout)`. Give the age variable a name that says what it holds, such as `age`.
 
 ### What to check
 
-Press **Run**. When the program asks the question, type `Grace` in the input box, and press Enter. The output should be:
+Try a name with a space in it, such as `Grace Hopper`. The whole name should appear in the greeting. If only `Grace` appears, you've read the name with `scanf("%s", ...)`, which stops at the first space, instead of `fgets`.
 
-```
-Happy birthday, Grace!
-That's 5 letters.
-```
-
-Then run it again with a longer name, such as `Margaret`, and check the count by hand.
+Also try an age of `36`, and check that the sentence says `37`.
 
 ### Extensions
 
-* Print an error and return a non-zero value if the name is empty. Decide what counts as empty, since a line with only spaces is also empty to a reader.
-* Count the letters only, and skip spaces, so `Ada Lovelace` gives 11 rather than 12. Explain which function you would use to do the counting.
+* Ask for the person's favorite color as well, and add it to the greeting.
+* Check that the age is positive before you print the greeting. The lesson hasn't covered `if` yet, so you can leave this for later.
 
 ---
 

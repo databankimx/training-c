@@ -4,7 +4,8 @@
       "title": "Part I - Basics",
       "chapters": [
         "ch01-getting-started",
-        "ch02-variables-and-input"
+        "ch02-variables-and-input",
+        "ch03-decisions"
       ]
     }
   ]

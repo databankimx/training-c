@@ -1,16 +1,37 @@
 #include <stdio.h>
 
 int main(void) {
-    int students = 24;
-    double average = 87.5;
-    char grade = 'B';
-    const int maximum = 100;
+    int number = 10;
+    printf("%d\n", number);
 
-    printf("Students: %d\n", students);
-    printf("Average: %.1f\n", average);
-    printf("Grade: %c\n", grade);
-    printf("Out of: %d\n", maximum);
+    number = 15;
+    printf("%d\n", number);
 
-    // Try: change grade to 'A', and predict the output before you press Run.
+    float small = 5.75f;
+    double large = 19.99;
+    printf("float: %g\n", small);
+    printf("double: %g\n", large);
+
+    double scientific = 35e3;
+    float scientific_f = 35e3f;
+    double big = 12E4;
+    printf("%g %g\n", scientific, big);
+    printf("%g\n", scientific_f);
+
+    char letter = 'a';
+    char code = 97;
+    printf("%c %c %d\n", letter, code, 'a' + 1);
+
+    int x = 5, y = 6, z = 50;
+    printf("%d %d %d\n", x, y, z);
+
+    int first, second, third;
+    first = second = third = 50;
+    printf("%d %d %d\n", first, second, third);
+
+    const double pi = 3.14159;
+    printf("%.5f\n", pi);
+
+    // Try: change pi to 3.0, and predict the last line before you press Run.
     return 0;
 }

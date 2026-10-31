@@ -1,23 +1,21 @@
 ## Homework: Introduce yourself
 
-Write a program that prints three lines introducing yourself. The output should be exactly these lines, with your name where the example has `Ada`:
+Write a program that introduces you in three lines. The program should print:
 
-```
-Hello, I'm Ada.
-I'm learning C.
-My favorite number is 7.
-```
+* your name, as `My name is ...`
+* where you're learning C, as `I am learning C at DataBank.`
+* one thing about yourself, as `I like ...`
 
-Use one `printf` for each line, and end each line with `\n`.
+Each line should end in a newline, so the output shows each line on its own. Include `<stdio.h>`, and use `main` and `return 0;` as in the lessons.
 
 ### What to check
 
-Press **Run**. The Output pane should show the three lines above, in order, followed by `Finished with exit code 0`. Change the name in your program to your own, and check the first line again.
+When you press **Run**, the three lines should appear in order, with the build lines above them and the exit code at the bottom. Compare your output with the requirements, and fix any line that's missing or on the wrong line.
 
 ### Extensions
 
-* Print the same three lines with a single `printf`, using `\n` twice inside the text. Which version is easier to change, and why?
-* Add a fourth line, `I'd like to learn about pointers.`, and make sure the program still returns 0.
+* Print a fourth line, with the time you spent on this exercise.
+* Use `fflush(stdout);` after one of the lines, and not after the others. Can you see any difference in the output?
 
 ---
 

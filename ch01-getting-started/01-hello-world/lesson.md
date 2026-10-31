@@ -67,6 +67,8 @@ Which header declares `printf`?
 
 Add a third line to the program, after the second one. Predict the output before you press **Run**. The second line has no `\n` at its end, so the third `printf` would continue on the same line. Add a `\n` to the end of the second line, and then predict again: the third line now starts on its own line.
 
+Then put `fflush(stdout);` after the first `printf`, and press **Run** again. The output looks the same. `\n` ends a line, and `fflush` pushes out whatever is waiting in the output buffer. For a program like this, either one is fine, but a prompt that asks for input needs the flush so the question appears on screen.
+
 ---
 
 And that's your first C program, built and run by the same tools that the professionals use. Nothing about it was magic, and every line had a reason to be there.

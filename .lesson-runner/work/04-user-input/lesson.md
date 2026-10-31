@@ -1,42 +1,61 @@
 ## User input
 
-A program that only prints is a one-way conversation. Real programs ask the user for values and use what comes back. In C, the standard input functions read from the keyboard, and the program in `src/main.c` asks for a name and an age, then uses both.
+So far, every value in our programs was decided before the program ran. That's fine for learning, but most real programs need to ask something of the person using them. C reads input with the standard input functions, the counterpart of `printf` for output. `stdin` is the stream that receives what the user types, and the functions that read from it are `fgets`, `scanf`, and their relatives.
 
-Press **Run**. When the program asks for your name, type a name in the input box under the Output pane, and press Enter. Then type an age the same way. For example, enter `Ada`, then `36`. The output is:
+Here's the program for this step. Press **Run**, and type into the input box at the bottom of the Output pane when it asks you to. Press Enter after each answer.
 
 ```
-What is your name? Ada
-How old are you? 36
-Hello, Ada. In ten years you will be 46.
+Enter some text: I like C
+You entered: I like C
+Enter a number: 4
+You entered: 4
+Enter another number: 9
+You entered: 9
+4 + 9 = 13
 ```
 
-The runner shows the text you typed in the Output pane, and the program's own lines follow. The first question is on the same line as its answer, since you typed it there.
+Your answers will be different, of course. The shape of the output is what matters.
 
-### Reading a line with fgets
+### Reading a whole line
 
-`fgets` reads one line, including the newline at its end, into an array:
+For the first question, the program uses `fgets`:
 
 ```c
-char name[64];
-fgets(name, sizeof name, stdin);
-name[strcspn(name, "\n")] = '\0';
+char text[128];
+fgets(text, sizeof text, stdin);
+text[strcspn(text, "\n")] = '\0';
 ```
 
-It stops at the size of the array, so a long line can't overflow it. The second line of code removes the newline: `strcspn` finds the first newline, and that position becomes the zero byte that ends the string.
+`fgets` reads everything the user types up to the Enter key, including spaces. That's what you want for a name, a sentence, or anything else where the spaces matter. It stops at the size of the array, so a line that's too long can't overflow it.
 
-`fgets` returns `NULL` when there's nothing more to read, such as when the input is closed. The `if` checks for that, and the program stops rather than using an array that was never filled.
+`fgets` keeps the newline at the end of the line, so the program removes it. `strcspn` finds the first newline, and the line of code puts the zero byte there, which ends the string before the newline.
 
-### Converting text to a number
+### Reading a number
 
-The age arrives as text, such as `"36\n"`. `strtol` converts the text to a `long`, starting at the beginning of the line. The last argument, `10`, is the base, which is decimal. If the text isn't a number, `strtol` returns 0 rather than reporting an error, so the program would treat `thirty` as age 0. Checking the result properly takes one more step, which the chapter on error handling covers.
+For the numbers, the program reads a line and converts it with `strtol`:
 
-### Why flush before a prompt
+```c
+char line[32];
+fgets(line, sizeof line, stdin);
+int x = (int)strtol(line, NULL, 10);
+```
 
-Output sent to a pipe is buffered, which means the text is held back until a newline or until the buffer fills. The runner talks to your program through a pipe, so the prompt `What is your name? ` could stay hidden while the program waits for input. `fflush(stdout)` sends the prompt out right away, so you can see it before you type.
+`strtol` reads whole-number text from the start of the line, and returns its value. The `10` says the number is written in decimal. It skips any spaces before the number, and it stops at the first character that isn't part of it.
 
-### Scanf is a trap
+C also has `scanf`, which reads a number straight into a variable, as in `scanf("%d", &x)`. It works, but it has a catch. `scanf` doesn't read the Enter key, so the newline stays in the input. If you then read a line with `fgets`, that newline is read as an empty line. The program avoids the problem by reading every answer as a whole line, and then converting it. That's the safer habit, and it's why this lesson doesn't use `scanf`.
 
-`scanf("%d", &age)` also reads input, but it leaves the newline behind in the input. The next read then sees that newline and takes it as an empty line. Many C programs go wrong because of this, and the safer habit is to read whole lines with `fgets` and convert them, as this program does.
+`strtol` gives a further warning. If the text isn't a number, it returns 0, and it doesn't report an error. The Try section shows what that looks like.
+
+### Why the prompts use flush
+
+Look at the first prompt in the program:
+
+```c
+printf("Enter some text: ");
+fflush(stdout);
+```
+
+The prompt has no newline at the end, so the output could wait in a buffer before it appears. `fflush(stdout)` pushes the text out at once, so the user sees the question before they're asked to answer it. Without it, a program can sit silently with no prompt on the screen, which is confusing.
 
 ---
 
@@ -45,21 +64,23 @@ Output sent to a pipe is buffered, which means the text is held back until a new
 *These questions are written for this course.*
 
 ````quiz
-Why does the program call fflush(stdout) before each prompt?
-○ To clear the screen.
-→ Not quite. fflush sends buffered output out. It doesn't clear anything.
-◉ So the prompt appears before the program waits for input.
-→ Yes. Output to a pipe is buffered, so the prompt could stay hidden until after the input.
-○ To make the program faster.
-→ Not quite. Flushing usually slows output slightly, and it's done here for correctness.
+Which function reads a whole line of text from the user, including spaces?
+○ scanf("%s", text)
+→ Not quite. %s stops at the first space, so it would only read one word.
+○ printf(text)
+→ Not quite. printf writes to the output. It doesn't read anything.
+◉ fgets(text, sizeof text, stdin)
+→ Yes. fgets reads up to the Enter key, spaces included, and stops at the size of the array.
 ````
 
 ---
 
 ### Try it in the runner
 
-Enter `Ada` as the name, then `10` as the age, and predict the last line before you press **Run**. It's `Hello, Ada. In ten years you will be 20.`, since the age is 10 and the program adds ten.
+At the second prompt, type a word such as `hello` instead of a number. Press **Run** again, and type `hello` at the second prompt.
+
+The program can't turn `hello` into a number, so `strtol` returns 0 for `x`, which is the value you'd get from text it can't read. The program doesn't report an error, and the later lines still run. The sum prints as 0 plus the second number. A real program should check the conversion, and the error handling chapter shows how.
 
 ---
 
-Reading whole lines and converting them is the safe way to take input in C. The next step is command-line arguments, which give a program its values before it starts.
+Being able to ask the user for something is the first step toward programs that respond to their input. The summary and the homework come next, and they'll put the whole chapter to work.

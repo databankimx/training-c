@@ -1,17 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(void) {
-    double celsius = 100.0;
-    double fahrenheit = celsius * 9.0 / 5.0 + 32.0;
-    printf("%.1f C is %.1f F\n", celsius, fahrenheit);
+    char line[64];
 
-    celsius = 25.0;
-    fahrenheit = celsius * 9.0 / 5.0 + 32.0;
-    printf("%.1f C is %.1f F\n", celsius, fahrenheit);
+    printf("Enter a temperature in Celsius: ");
+    fflush(stdout);
+    if (fgets(line, sizeof line, stdin) == NULL) {
+        return 1;
+    }
 
-    celsius = 0.0;
-    fahrenheit = celsius * 9.0 / 5.0 + 32.0;
-    printf("%.1f C is %.1f F\n", celsius, fahrenheit);
-
+    double celsius = strtod(line, NULL);
+    const double fahrenheit = celsius * 9.0 / 5.0 + 32.0;
+    printf("%g C is %g F\n", celsius, fahrenheit);
     return 0;
 }

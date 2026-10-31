@@ -39,11 +39,25 @@ Every argument is a string, even when it looks like a number. `strtol` converts 
 
 Here is the trap. `strtol` returns 0 for text that isn't a number, and it doesn't stop the program. With `4 nine`, the second number becomes 0, and the program prints `4 + 0 = 4` with no error. That's the behavior you'll see in the Try section, and it's why a program that takes numbers from the command line should check them. The chapter on error handling shows how.
 
+### Arguments and the runner
+
+The runner's argument box splits what you type at each space, and sends each word as a separate argument. That's why `4 9` gives two arguments, and why a program that needs the whole line of text has to join the words back together.
+
 ---
 
 ### Quiz
 
 *These questions are written for this course.*
+
+````quiz
+Which argument position holds the first real argument the user typed?
+○ argv[0]
+→ Not quite. argv[0] holds the program's own name.
+◉ argv[1]
+→ Yes. The first real argument follows the program's name, so it's at position 1.
+○ argc
+→ Not quite. argc is a count of the words, not one of them.
+````
 
 ````quiz
 For the command `program 4 9`, what is argc?
@@ -53,6 +67,16 @@ For the command `program 4 9`, what is argc?
 → Yes. The program's name, 4, and 9 make three words.
 ○ 4
 → Not quite. Only the program's name and the two numbers are counted.
+````
+
+````quiz
+Why does the loop in this program start at 1, not 0?
+○ Because argv[0] is an empty string.
+→ Not quite. argv[0] holds the program's name, which isn't empty.
+◉ Because argv[0] is the program's own name, and the first argument the user typed is argv[1].
+→ Yes. Starting at 1 skips the program's name.
+○ Because argc is always 0.
+→ Not quite. argc counts the words, and is 0 only when nothing was typed.
 ````
 
 ---

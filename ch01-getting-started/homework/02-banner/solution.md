@@ -1,9 +1,9 @@
 ## Banner
 
-The example prints the three lines one at a time, so each line can be checked against the banner on its own.
+The example prints the three lines one at a time, so each line can be checked against the box on its own.
 
-The box is twelve characters wide. The text `C is fun` is eight characters long. Add two spaces, one on each side, and you have ten characters inside the asterisks. Each side adds one asterisk and one space, so the middle line is twelve characters long too. The top and bottom lines are twelve asterisks.
+The greeting, `Hello!`, is six characters long. The middle line adds a space on each side and an asterisk at each end, which makes it ten characters: `* Hello! *`. The top and bottom lines are ten asterisks, so all three lines match.
 
-The extension asks for the width of a longer phrase. Count the characters in the text, add four (two spaces and two asterisks), and that's the number of asterisks for the top and bottom lines. For `Learning C is great`, that's 19 characters plus 4, so 23 asterisks.
+The extension asks for a count of the stars rather than typed-out stars. To print a line of asterisks for any width, you'd repeat a `printf` for each one, and the loops chapter shows how to do that in one statement.
 
-The `%s` in the second extension is a placeholder for a string. `printf` replaces it with the text you pass after the format, which is the idea behind printing the banner for any phrase.
+The second extension, flushing after each line, leaves the box exactly as it was. Flushing only changes when the text is sent to the screen, not what it says.

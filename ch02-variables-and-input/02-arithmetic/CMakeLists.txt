@@ -12,3 +12,5 @@ if(LESSON_BACKTRACE)
 endif()
 
 add_executable(program src/main.c)
+# The math functions (sqrt, pow, round) are in the math library.
+target_link_libraries(program PRIVATE m)
