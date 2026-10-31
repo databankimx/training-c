@@ -8,6 +8,10 @@ int main(void) {
     printf("%d\n", first[1]);
     printf("%d\n", *(first + 2));
 
+    printf("Array size: %zu bytes\n", sizeof numbers);
+    printf("Pointer size: %zu bytes\n", sizeof first);
+    printf("Elements counted from the array: %zu\n", sizeof numbers / sizeof numbers[0]);
+
     // Try: set first = &numbers[2], and predict *first before you press Run.
     return 0;
 }

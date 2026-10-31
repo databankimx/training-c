@@ -12,6 +12,10 @@ int main(void) {
     printf("%d\n", speeds[0]);
     printf("%d\n", nums[2]);
 
+    const char *cars[4] = {"Volvo", "BMW", "Ford", "Mazda"};
+    printf("%s\n", cars[0]);
+    printf("%s\n", cars[2]);
+
     // Try: set int index = 4, print speeds[index], and predict the result before you press Run.
     return 0;
 }

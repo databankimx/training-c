@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(void) {
-    char days[7][10] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    const char *days[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     char line[32];
 
     printf("Enter a day number (1-7): ");

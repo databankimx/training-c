@@ -10,6 +10,13 @@
         "ch05-pointers",
         "ch06-loops"
       ]
+    },
+    {
+      "title": "Part II - Structuring programs",
+      "chapters": [
+        "ch07-functions",
+        "ch08-files"
+      ]
     }
   ]
 }

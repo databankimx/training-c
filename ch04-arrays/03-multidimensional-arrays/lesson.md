@@ -21,7 +21,7 @@ G
 D
 ```
 
-The declaration `letters[2][4]` means two rows, each with four columns. The braces follow the same layout: the outer braces hold the rows, and each inner pair of braces holds one row's values, in order. The example uses single characters rather than strings, because a string in C is itself an array, and an array of strings needs pointers. Characters keep the grid simple until the pointers chapter.
+The declaration `letters[2][4]` means two rows, each with four columns. The braces follow the same layout: the outer braces hold the rows, and each inner pair of braces holds one row's values, in order. The example uses single characters rather than strings, because a string in C is itself an array, and a two-dimensional array of strings would need each row to be padded to the longest name. Characters keep the grid simple. The first step of this chapter shows the pointer form of an array of strings, which doesn't need padding.
 
 The first index picks the row, and the second picks the column. Both start at zero. So `letters[1][2]` is row 1, column 2, which is `G`, and `letters[0][3]` is row 0, column 3, which is `D`. Read the two indexes in the order they're written, row first.
 

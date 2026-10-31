@@ -10,6 +10,7 @@ This chapter covered how a program stores a list of values of one type under a s
 * **Leave out the size when you list the values.** `int speeds[] = {...}` counts the values for you.
 * **`sizeof` gives the number of elements.** `sizeof array / sizeof array[0]` divides the array's size in bytes by the size of one element. It works only while the array's declaration is in view.
 * **Multidimensional arrays use one index per dimension.** `grid[1][2]` is row 1, column 2. Both indexes start at zero, and each must stay within its own size.
+* **An array of strings holds one pointer per string.** `const char *cars[4]` is an array of four pointers, each pointing at a string literal. Each string can have its own length, so no padding is needed.
 
 ### Check your understanding
 

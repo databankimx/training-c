@@ -17,9 +17,14 @@ Press **Run**. The output is:
 10
 20
 30
+Array size: 12 bytes
+Pointer size: 8 bytes
+Elements counted from the array: 3
 ```
 
-The program prints three elements, each in a different way. `*first` reads the value at the address, which is 10. `first[1]` uses square brackets on a pointer, and gives the element one step past it, which is 20. `*(first + 2)` adds 2 to the pointer, and reads the element two steps along, which is 30.
+The first three lines show the program reading each element in a different way. `*first` reads the value at the address, which is 10. `first[1]` uses square brackets on a pointer, and gives the element one step past it, which is 20. `*(first + 2)` adds 2 to the pointer, and reads the element two steps along, which is 30.
+
+The last three lines show what `sizeof` gives for the array and for the pointer. The array is three `int` values, 12 bytes on this toolchain. The pointer is 8 bytes, which is the size of an address on a 64-bit system. The count of elements is the array's size divided by the size of one element, which gives 3, as the arrays chapter showed.
 
 ### Adding to a pointer
 
@@ -29,19 +34,11 @@ Square brackets are a shorthand for this: `first[1]` means `*(first + 1)`. The t
 
 ### Why a function needs a count
 
-This explains the arrays chapter's point about lengths. Suppose a function receives an array as a parameter:
+The last line of output shows the problem a function would run into. In `main`, `sizeof numbers` gives the size of the whole array, so the count is 3. A pointer holds only an address, and `sizeof first` gives 8, which is the size of the address and says nothing about how many elements follow it.
 
-```c,ignore
-void print_numbers(int numbers[], size_t count) {
-    for (size_t i = 0; i < count; i++) {
-        printf("%d\n", numbers[i]);
-    }
-}
-```
+When an array is passed to a function, the function receives only a pointer, just like `first`. Inside the function, `sizeof` on the parameter gives the pointer's size, so the function can't work out the count itself. The count has to be passed in as a separate parameter. The functions chapter shows how to write that function, and the `sizeof` output above shows why it's needed.
 
-The parameter is really an `int *`, and `numbers[i]` is `*(numbers + i)`. The function can reach any element it's pointed at, but it has no way to find the end. Inside the function, `sizeof numbers` gives the size of a pointer, not of the array, so the count has to be passed in. That's why `count` is in the parameter list. The functions chapter covers how to write and call functions like this one.
-
-Keep the two meanings apart. In `main`, `numbers` is the whole array, and `sizeof numbers / sizeof numbers[0]` gives its length. Inside a function, `numbers` is a pointer, and the same expression gives a wrong answer.
+Keep the two meanings apart. In `main`, `numbers` is the whole array, and `sizeof numbers / sizeof numbers[0]` gives its length. Once it's a pointer, the same expression gives the wrong answer.
 
 ---
 
@@ -60,13 +57,13 @@ With `int *first = numbers;`, what is `first[2]` for `int numbers[3] = {10, 20, 
 ````
 
 ````quiz
-Inside a function that receives `int numbers[]` as a parameter, why can't `sizeof numbers` find the number of elements?
-○ Because sizeof only works on strings.
-→ Not quite. sizeof works on any object, but it gives the size of what the name refers to.
-◉ Because numbers is a pointer inside the function, so sizeof gives the size of a pointer.
-→ Yes. The pointer shows where the first element is, but not where the array ends.
-○ Because pointers can't be read.
-→ Not quite. A pointer can be read, through the dereference operator.
+Why does `sizeof first` give 8 in the program, when `sizeof numbers` gives 12?
+○ Because first holds only three elements.
+→ Not quite. first holds an address, not elements, so its size says nothing about the array's length.
+◉ Because first is a pointer, and sizeof gives the size of the address it holds.
+→ Yes. A pointer is the size of an address, and it doesn't carry the size of the array it points to.
+○ Because pointers are always one byte.
+→ Not quite. A pointer is the size of an address, which is 8 bytes on this 64-bit toolchain.
 ````
 
 ---
@@ -76,6 +73,8 @@ Inside a function that receives `int numbers[]` as a parameter, why can't `sizeo
 Set `first = &numbers[2];`, and predict what `*first` shows before you press **Run**. It shows 30, since `&numbers[2]` is the address of the third element.
 
 Then change `first` to point at `numbers[0]` again, and predict the output of `first[2]`. It's 30 again, since the square brackets reach two elements past the pointer.
+
+Finally, predict the `Pointer size` line on a computer with a 32-bit toolchain. It would print 4 bytes, since an address is then half the size. The array's size would still be 12 bytes, since its three `int` values don't change.
 
 ---
 

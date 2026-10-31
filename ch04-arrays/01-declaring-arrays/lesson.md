@@ -21,7 +21,21 @@ Press **Run**. The output begins:
 
 Read the declaration as "speeds is an array of four ints". The type comes first, then the name, then the number of elements in square brackets. The braces hold the starting values, in order. Every element in an array has the same type, so `speeds` holds only `int` values and `nums` only `int` values as well.
 
-The example uses numbers rather than names of cars. An array of strings in C needs pointers, or a two-dimensional array of characters, and both are covered later in the course. An array of numbers shows the same ideas without that extra step.
+The example uses numbers rather than names of cars for its first arrays, so the ideas are clear before pointers are involved. The last part of the program uses an array of strings, which is the pointer form covered in the next section.
+
+### Arrays of strings
+
+An array of strings holds one pointer per string:
+
+```c
+const char *cars[4] = {"Volvo", "BMW", "Ford", "Mazda"};
+printf("%s\n", cars[0]);
+printf("%s\n", cars[2]);
+```
+
+The output is `Volvo` and then `Ford`. Each element of `cars` is a `const char *`, which points at the first character of one string literal. `cars[0]` is therefore the address of the text `Volvo`, and `%s` prints the string from that address up to its zero byte.
+
+The declaration reads the same as the integer arrays above: the type is `const char *`, the name is `cars`, and the size is 4. The pointers chapter explains the pointer part in detail, and the strings-and-pointers step shows how the pointer and the text relate. Each string can have a different length, which is why the array doesn't need the padding that a two-dimensional character array does.
 
 ### Indexing from zero
 

@@ -190,7 +190,7 @@ Each chapter folder holds its sections, and each section holds its steps. A step
 | Part | Chapters | Status |
 |---|---|---|
 | I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
-| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | Planned |
+| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 and 8 (functions, files) are written |
 | III - Additional topics | Dynamic memory and data structures, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | Planned |
 | Final project | A calculator, in two tracks: a core and bonus items | Planned |
 
@@ -217,6 +217,8 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 4 written: declaring arrays, initializing arrays, multidimensional arrays, the summary, and two homework exercises. Arrays of strings are deferred to the pointers chapter, and the C versions use char arrays or int arrays where the C++ versions use strings |
 | 10/30/2026 | Chapter 5 written: pointers, pointers and arrays, the summary, and two homework exercises. C has no references, so the chapter covers pointers only. The homework does its swaps inline, since functions come in Chapter 7 |
 | 10/30/2026 | Chapter 6 written: while loops, for loops, looping over arrays (C's replacement for the range-based loop), break and continue, Battleship, the summary, and two homework exercises. Chapter 5's folder was renamed to ch05-pointers to match its content |
+| 10/30/2026 | Chapter 7 written: defining functions, parameters (C has no default values, so parameters are shown as copies), return values (C has no overloading, so each function has its own name), arrays as parameters, pointer parameters in place of references, recursion over a folder tree using the Windows file API, the summary, and two homework exercises |
+| 10/30/2026 | Chapter 8 written: writing files, reading files, overwriting files and the fopen modes, the summary, and two homework exercises. The C version uses stdio.h in place of the C++ stream classes, and creates its data folder with the Windows API, since empty folders aren't kept in version control |
 
 ---
 
