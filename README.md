@@ -124,6 +124,7 @@ The chapter list on the left shows each chapter, such as *Ch01 · Getting Starte
 
 - The **Lesson** tab shows the step's lesson, with quizzes.
 - The **Source** tab shows the step's `src/main.c`. It's an editor. Edits are kept in the runner until you click **Reset**, and nothing is written to the repository.
+- The **Visualize** button appears for steps that write a `trace.js` file while they run. It opens an animation of the algorithm, with Play, Previous, Next, a speed setting, and the arrow keys.
 - Press **Run** (or F5) to build and run the step. The build status lines appear in the Output pane, followed by the program's output.
 - Press **Test** to build the step and run its tests, for steps that have them.
 - If a program asks for input, type in the input box under the Output pane, then press Enter or click **Go**.
@@ -172,7 +173,30 @@ cmake --build build
 ```
 training-c/
 |- ch01-getting-started/         - Chapter 1: setup, the first programs, and the summary
-|- ...                           - Further chapters, as they are written
+|- ch02-variables-and-input/     - Chapter 2: variables, arithmetic, strings, input, command-line arguments
+|- ch03-decisions/               - Chapter 3: booleans, logical operators, if, switch
+|- ch04-arrays/                  - Chapter 4: arrays, initializing, multidimensional arrays
+|- ch05-pointers/                - Chapter 5: pointers, pointers and arrays, strings, dynamic memory
+|- ch06-loops/                   - Chapter 6: while, for, looping over arrays, break and continue
+|- ch07-functions/               - Chapter 7: defining functions, parameters, return values, recursion
+|- ch08-files/                   - Chapter 8: writing, reading, and overwriting files
+|- ch09-error-handling/          - Chapter 9: return codes, errno, cleanup with goto
+|- ch10-structures/              - Chapter 10: structures, typedef, copies and pointers
+|- ch11-structures-with-behavior/ - Chapter 11: functions that act on structures, init functions, opaque types
+|- ch12-composition-and-polymorphism/ - Chapter 12: embedding, protection, function pointers
+|- ch13-headers-and-multiple-files/ - Chapter 13: headers, source files, include guards
+|- ch14-containers/              - Chapter 14: vectors, hash tables, choosing a container
+|- ch15-efficiency/              - Chapter 15: Big O, counting operations, Fibonacci
+|- ch16-searching-and-sorting/   - Chapter 16: searches and sorts, with visualizer traces
+|- ch17-resource-management/     - Chapter 17: cleanup on exit, single owners, shared ownership
+|- ch18-ownership-transfer/      - Chapter 18: transferring ownership of structures and heap blocks
+|- ch19-generic-code/            - Chapter 19: macros, void pointers, generic functions
+|- ch20-function-pointers-with-context/ - Chapter 20: rules and state passed to functions
+|- ch21-testing/                 - Chapter 21: checks, CTest, the Test button
+|- ch22-concurrency/             - Chapter 22: threads and critical sections
+|- ch23-build-systems/           - Chapter 23: library targets and CMake options
+|- ch24-debugging-and-sanitizers/ - Chapter 24: call paths, assertions, the debugger, sanitizers
+|- ch25-modern-features/         - Chapter 25: C23 auto, flagged results in place of optional
 |- final-project/                - The final project: a calculator, with a core and bonus items as homework steps
 |- lesson-runner/                - The desktop lesson runner
 |  |- host/                      - C back end: window, router, runner, discovery, and commands
@@ -186,14 +210,14 @@ training-c/
 
 Each chapter folder holds its sections, and each section holds its steps. A step is a folder with a `lesson.md`, and a `CMakeLists.txt` if it has code. Steps appear in the order of their names, so the number prefix keeps them in order.
 
-### Course outline (in progress)
+### Course outline
 
 | Part | Chapters | Status |
 |---|---|---|
-| I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
-| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 13 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files) are written |
-| III - Additional topics | Containers, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | In progress. Chapters 14 (containers), 15 (efficiency), 16 (searching and sorting), 17 (resource management), 18 (ownership transfer), 19 (generic code), 20 (function pointers with context), 21 (testing), 22 (concurrency), 23 (build systems), and 24 (debugging and sanitizers) are written |
-| Final project | A calculator, in two tracks: a core and bonus items | Planned |
+| I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | Complete. Chapters 1 to 6 |
+| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | Complete. Chapters 7 to 13 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files) |
+| III - Additional topics | Containers, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads, build systems, debugging and sanitizers, modern C | Complete. Chapters 14 (containers) to 25 (modern features) |
+| Final project | A calculator, in two tracks: a core and bonus items | Complete (core and bonus items) |
 
 The outline is a plan and may change as the lessons are written.
 
@@ -236,6 +260,9 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 22 written as Concurrency: threads with CreateThread and WaitForSingleObject, critical sections in place of std::mutex and lock_guard, the summary, and two homework exercises (split sum and shared list). The course uses the Windows thread functions, since MinGW does not reliably provide the C11 thread interface |
 | 10/30/2026 | Chapter 23 written as Build Systems: a static library target with PUBLIC include folders, a CMake option with a compile definition and an #ifdef check, the summary, and two homework exercises (a second library and a debug option). The C library returns results through a caller's buffer, and the options use the same CMake commands as the C++ course |
 | 10/30/2026 | Chapter 24 written as Debugging and Sanitizers: a call path recorded with a TRACE macro built on __func__, assertions with NDEBUG, a VS Code debugging session with gcc, sanitizers explained with their toolchain limits, the summary, and two homework exercises (checked average and count in range). Dr. Memory covers the heap errors on Windows, since the sanitizer libraries aren't packaged for this toolchain |
+| 10/30/2026 | Chapter 25 written as Modern Features: C23 auto and named members in place of structured bindings, a flag-carrying structure in place of std::optional, the summary, and two homework exercises (word totals and safe division). Chapter 25's CMake files set the standard to C23, the only chapters that do so. C has no structured bindings or optional type, so their C forms are shown |
+| 10/30/2026 | Final project written in C as A Calculator, at final-project in the repository root, as in the C++ course. The core has a recursive-descent parser that records errors in a structure, with selftest and demo modes registered with CTest. The bonus step adds ^, sqrt, and square and curly brackets, and links the math library. Chapter 25 and the final project are not yet tested |
+| 11/01/2026 | Release: the C course, chapters 1 to 25 and the final project, is complete. Chapters 17 to 24 were built and tested, and Chapter 25 and the final project were tested before this release. The runner's quick picks, visualizer, and debug switch are documented in AUTHORING.md and QUICKSTART.md |
 
 ---
 

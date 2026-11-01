@@ -36,7 +36,9 @@
         "ch21-testing",
         "ch22-concurrency",
         "ch23-build-systems",
-        "ch24-debugging-and-sanitizers"
+        "ch24-debugging-and-sanitizers",
+        "ch25-modern-features",
+        "final-project"
       ]
     }
   ]

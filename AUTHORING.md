@@ -44,7 +44,7 @@ Each step builds with CMake. The runner depends on three rules in the step's `CM
 
 1. **An executable target named `program`.** Run builds the step and then runs `program.exe`. A step without it shows an error when Run is pressed.
 2. **Tests declared with `add_test`.** The Test button runs `ctest` on the step's build. A step with `add_test` in its CMake file shows the Test button.
-3. **The backtrace switch.** The runner passes `LESSON_BACKTRACE=ON` when the Backtrace checkbox is on. The step should add `-g` in that case, so a debugger or a stack trace shows function names.
+3. **The debug switch.** When the Backtrace checkbox is on, the runner adds `-DCMAKE_C_FLAGS=-g` to the configure command, which gives every step debug information for the debugger and for call paths. The step needs no code for this, and it shouldn't read a variable of its own.
 
 A minimal step looks like this:
 
@@ -57,12 +57,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-if(LESSON_BACKTRACE)
-    add_compile_options(-g)
-endif()
-
 add_executable(program src/main.c)
 ```
+
+A step that uses a library or an option declares it in the same file, as the build-systems chapter shows. A step that uses C23 features, such as the modern-features chapter, sets `CMAKE_C_STANDARD` to 23 instead.
 
 A step with tests adds a second executable, and registers it with CTest:
 
@@ -85,7 +83,28 @@ run demo
 test
 ```
 
+The runner shows each line in the **input** dropdown, so a reader can run a particular case with one click. Arguments are split at each space, as on a command line, and a program that takes its whole argument list as one expression should join them, as the calculator does.
+
 `NAME=value` words at the start of a line become environment variables for that run only, such as `IGNORE_CASE=1 run`.
+
+## Visualizers
+
+Some steps show an animation of an algorithm. The step's program writes a file called `trace.js` in its working folder, and the runner's **Visualize** button opens the shared page in `resources\visualizer\visualize.html` beside that file.
+
+The button appears only when the step's source writes `trace.js`, so a step gets it by writing the file, not by carrying its own copy of the page. The trace is a JavaScript assignment, `window.trace = {...};`, with a title, an optional target, and a list of frames. Each frame has:
+
+| Field | Meaning |
+|---|---|
+| `array` | The values to draw, as numbers |
+| `compare` | The indexes being compared, drawn amber |
+| `swap` | The indexes being swapped, drawn purple |
+| `sorted` | The indexes already in their final places, drawn green |
+| `found` | The index of a match, drawn green, or -1 |
+| `message` | The text shown under the bars |
+
+A trace must end on a frame that shows the finished result. A page stops at its last frame, so a sort that ends on its last comparison looks unfinished. Give each trace a closing frame, such as `The array is sorted.`
+
+The sort and its trace should share one implementation, so the frames always show the work the count measures.
 
 ## Writing a step
 
@@ -106,7 +125,7 @@ Write in US English. Use hyphens, not em dashes. Don't use emojis.
 
 ### Code samples
 
-- **Runnable code** goes in `src/main.c`, in a step with a `CMakeLists.txt`. Use the C17 standard. Warnings are on, and a step should build without any.
+- **Runnable code** goes in `src/main.c`, in a step with a `CMakeLists.txt`. Use the C17 standard, or C23 where the chapter teaches a C23 feature. Warnings are on, and a step should build without any.
 - **Snippets** that show part of a program, or that won't compile on purpose, use a block marked `c,ignore`. The runner shows these, and doesn't try to run them.
 - **Output blocks** have no language.
 - **Pipes and buffering.** Output sent to a pipe is buffered, so a prompt with no newline may not appear until after input is typed. Steps that prompt should call `fflush(stdout)`, and the lesson can say why.
@@ -190,7 +209,8 @@ Don't use a separate section for the summary. A summary section appears in the c
 6. **Check the names.** Folder names follow the rules above, and the titles the runner shows read well.
 7. **Check the style.** US English, hyphens rather than em dashes, no emojis.
 8. **Check for secrets and paths.** No tokens, no personal paths, and no machine-specific settings.
-9. **Update the docs.** When a chapter or step is added, renamed, or removed, update the README's repository tree and course outline, the chapter names in QUICKSTART, and any example names in this guide.
+9. **Check dependencies.** A new library or tool needs its licence approved before it's added (section 12 of the development rules). Vendored sources are fetched by a script in `resources\vendor`, and downloaded binaries are listed in `.gitignore`, so the repository holds the script and not the binary.
+10. **Update the docs.** When a chapter or step is added, renamed, or removed, update the README's repository tree and course outline, the chapter names in QUICKSTART, and any example names in this guide.
 
 ---
 

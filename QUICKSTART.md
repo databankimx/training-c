@@ -118,10 +118,27 @@ Work through these once, to confirm each kind of example runs.
 | Program with output | Ch01, Hello world | `Hello World!` and `I am learning C` in the Output pane. Press **Run** (or F5) |
 | Program with a homework example | Ch01, Homework, Banner | The three lines of the banner. The example is hidden until you choose to reveal it |
 | Quick picks | Ch01, Hello world | The Quick picks box stays hidden, since the step has one command |
+| Visualizer | Ch16, Linear search | Press **Run**, then **Visualize**. A browser opens with the bars and the search stepping through them |
+| Tests | Ch21, Running tests with CTest | Press **Test**. The output reports the test as passed |
+| Quick pick with arguments | Final project, Core calculator | Open the Quick picks box and choose `run demo`. The eight examples and six error cases print |
 
 The runner's own test steps, which exercise each kind of run, are in `resources\runner-test-steps`.
 
 The first run of each step builds it, so it can take several seconds.
+
+---
+
+## 8. Optional: Dr. Memory
+
+The malloc step in Chapter 5 uses Dr. Memory to check memory errors on Windows. It's optional, and the course doesn't need it to run. To install it, from the repository root:
+
+```pwsh
+powershell -ExecutionPolicy Bypass -File .\resources\vendor\drmemory\fetch-drmemory.ps1
+```
+
+The script downloads the newest release into `resources\vendor\drmemory\install`, and prints the path to `drmemory.exe`. The download is ignored by git, so it isn't committed.
+
+**Check:** the script's last line gives the path to `drmemory.exe`.
 
 ---
 
@@ -138,5 +155,8 @@ The first run of each step builds it, so it can take several seconds.
 | Run says the program couldn't start with "Access is denied", or the program is missing right after a build | Check that the repository is under `C:\Development`. If it is, report the step and the full error text, since your security software may be removing the new program. |
 | The window opens with no icon, or the chapters don't load | Check the Output pane and the summary from `setup.ps1`, then send the first error to the development team. |
 | The Output pane shows a `.WebView2` folder next to the runner | That's the browser's data folder, created on first run. It's normal, and can be ignored. |
+| The Visualize button doesn't appear | The step's program must write `trace.js` when it runs. Press **Run** once, then check whether the button appears. |
+| The Visualize page says "No trace found" | Press **Run** in the step first. The page reads the `trace.js` that the last run wrote. |
+| The Visualize button opens a page that doesn't animate | Check that the Output pane shows no error from the program, then press **Visualize** again after a successful run. |
 
 If a problem isn't listed here, note the step you were on and the full error text, and report it. Include the Output pane text, because the first error is often the useful one.
