@@ -29,7 +29,9 @@
         "ch14-containers",
         "ch15-efficiency",
         "ch16-searching-and-sorting",
-        "ch17-resource-management"
+        "ch17-resource-management",
+        "ch18-ownership-transfer",
+        "ch19-generic-code"
       ]
     }
   ]

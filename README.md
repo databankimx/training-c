@@ -192,7 +192,7 @@ Each chapter folder holds its sections, and each section holds its steps. A step
 |---|---|---|
 | I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
 | II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 13 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files) are written |
-| III - Additional topics | Containers, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | In progress. Chapters 14 (containers), 15 (efficiency), 16 (searching and sorting), and 17 (resource management) are written |
+| III - Additional topics | Containers, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | In progress. Chapters 14 (containers), 15 (efficiency), 16 (searching and sorting), 17 (resource management), 18 (ownership transfer), and 19 (generic code) are written |
 | Final project | A calculator, in two tracks: a core and bonus items | Planned |
 
 The outline is a plan and may change as the lessons are written.
@@ -229,6 +229,8 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 15 written as Efficiency: Big O, counting operations, Fibonacci in naive, memoized, and loop forms, the summary, and two homework exercises (count pairs and stairs). The memo tables use arrays, since the keys are small whole numbers, and the input checks return codes in place of exceptions |
 | 10/30/2026 | Chapter 16 written as Searching and Sorting: linear and binary search, bubble, selection, insertion, merge, and quick sort with visualizer traces, the standard library with qsort and bsearch, the summary, and two homework exercises (count inversions and lower bound). Each sort's trace ends with a frame that shows the finished array. The visualizer is shared from resources, and the runner shows Visualize for any step whose source writes trace.js |
 | 10/30/2026 | Chapter 17 written as Resource Management: cleanup on every exit with goto labels, single owners by convention with create and destroy functions, shared ownership with a hand-written reference count, the summary, and two homework exercises (a guarded section and shared owners). C has no destructors or smart pointers, so these techniques replace RAII, unique_ptr, and shared_ptr |
+| 10/30/2026 | Chapter 18 written as Ownership Transfer: copies and transfers of a structure with the source cleared, transferring a heap pointer and leaving NULL in the source, the summary, and two homework exercises (an ownership handoff and move through holders). C has no move constructors or std::move, so transfers are written by hand |
+| 10/30/2026 | Chapter 19 written as Generic Code: macros and their double evaluation, void pointers with element sizes and caller-supplied comparisons, the summary, and two homework exercises (smallest of, and a pair written out for each combination of types). C has no templates, so these techniques replace them |
 
 ---
 
