@@ -354,18 +354,18 @@ static void sort_names(Words *names) {
 
 /* ---- Source files and CMake ------------------------------------------------------------------- */
 
-/* Scans the sources under a folder (recursively) for a main function. Returns 1 if one is found. */
-static int folder_has_main(const char *folder) {
+/* Scans the sources under a folder (recursively) for a piece of text. Returns 1 if it's found. */
+static int folder_has_text(const char *folder, const char *needle) {
     Words names = list_folder(folder);
     int found = 0;
     for (size_t i = 0; i < names.count && !found; i++) {
         char *path = path_join(folder, names.items[i]);
         if (!path) break;
         if (is_directory(path)) {
-            found = folder_has_main(path);
+            found = folder_has_text(path, needle);
         } else if (ends_with(names.items[i], ".c") || ends_with(names.items[i], ".h")) {
             char *text = read_file(path);
-            found = contains(text, "int main(");
+            found = contains(text, needle);
             free(text);
         }
         free(path);
@@ -379,9 +379,17 @@ static int step_has_main(const char *step) {
     static const char *folders[] = {"src", "tests"};
     for (size_t i = 0; i < sizeof folders / sizeof folders[0] && !found; i++) {
         char *folder = path_join(step, folders[i]);
-        if (folder && is_directory(folder)) found = folder_has_main(folder);
+        if (folder && is_directory(folder)) found = folder_has_text(folder, "int main(");
         free(folder);
     }
+    return found;
+}
+
+/* A step writes a trace for the visualizer when its source mentions trace.js. */
+static int step_writes_trace(const char *step) {
+    char *src = path_join(step, "src");
+    int found = src && is_directory(src) && folder_has_text(src, "trace.js");
+    free(src);
     return found;
 }
 
@@ -497,7 +505,7 @@ static LessonStep *steps_in(const char *folder, size_t *count) {
                 step->has_tests = cmake_declares_tests(path);
                 step->has_main = step_has_main(path);
                 char *visualizer = path_join(path, "visualize.html");
-                step->has_visualizer = visualizer && is_regular_file(visualizer);
+                step->has_visualizer = (visualizer && is_regular_file(visualizer)) || step_writes_trace(path);
                 free(visualizer);
                 lesson_read_options(cmake, &step->options, &step->option_count);
             }

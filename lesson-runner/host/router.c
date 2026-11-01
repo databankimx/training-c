@@ -250,8 +250,13 @@ cJSON *lesson_router_handle(LessonRouter *router, const char *command, const cJS
         char page[PATH_MAX_BYTES * 2];
         snprintf(page, sizeof page, "%s\\%s\\visualize.html", work, step_name);
         if (GetFileAttributesA(page) == INVALID_FILE_ATTRIBUTES) {
-            set_error(error, error_size, "Run this step once, so its trace is written, then press Visualize.");
-            return NULL;
+            /* The shared visualizer is copied next to the run's trace.js, so the page can read the trace. */
+            char shared[PATH_MAX_BYTES * 2];
+            snprintf(shared, sizeof shared, "%s\\resources\\visualizer\\visualize.html", router->repo_root);
+            if (!CopyFileA(shared, page, FALSE)) {
+                set_error(error, error_size, "Run this step once, so its trace is written, then press Visualize.");
+                return NULL;
+            }
         }
         if (!lesson_open_file(page, work, error, error_size)) return NULL;
         return cJSON_CreateNull();
