@@ -34,7 +34,9 @@
         "ch19-generic-code",
         "ch20-function-pointers-with-context",
         "ch21-testing",
-        "ch22-concurrency"
+        "ch22-concurrency",
+        "ch23-build-systems",
+        "ch24-debugging-and-sanitizers"
       ]
     }
   ]
