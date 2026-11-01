@@ -471,8 +471,12 @@ static void work(LessonRunner *runner, const WorkerContext *context) {
     buffer_append(&configure, folder);
     buffer_append(&configure, "\" -B \"");
     buffer_append(&configure, build);
-    buffer_append(&configure, "\" -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DLESSON_BACKTRACE=");
-    buffer_append(&configure, request->backtrace ? "ON" : "OFF");
+    buffer_append(&configure, "\" -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug");
+    /* Backtrace adds debug information to every step through the compiler flags. This doesn't set a CMake variable,
+       so steps don't need to read one, and CMake doesn't warn about an unused variable. */
+    if (request->backtrace) {
+        buffer_append(&configure, " -DCMAKE_C_FLAGS=-g");
+    }
     for (size_t i = 0; i < request->option_count; i++) {
         buffer_append(&configure, " -D");
         buffer_append(&configure, request->option_names[i]);

@@ -13,6 +13,7 @@ lesson-runner/build/
 
 # Downloaded and generated files under resources. setup.ps1 recreates them.
 resources/vendor/webview2/sdk/
+resources/vendor/drmemory/install/
 resources/vendor/cjson/cJSON.c
 resources/vendor/cjson/cJSON.h
 resources/vendor/cjson/LICENSE

@@ -92,6 +92,7 @@ cd lesson-runner
 | Ninja | Lessons and runner | Runs the build | Apache 2.0 |
 | WebView2 SDK | Lesson runner | The runner's window | Microsoft SDK license |
 | cJSON | Lesson runner | Messages between the window and the back end | MIT |
+| Dr. Memory | Developers, optional (not bundled; fetched by resources\vendor\drmemory\fetch-drmemory.ps1) | Checks memory errors in programs built with MinGW | LGPL 2.1, with BSD-licensed modules. Approved for use 10/31/2026 under section 12 |
 | marked | Lesson runner (web folder) | Converts lesson Markdown to HTML | MIT |
 | @viz-js/viz | Lesson runner (web folder) | Draws the diagrams in lessons | MIT, which wraps Graphviz (EPL-2.0) |
 | highlight | Lesson runner (web folder) | Syntax coloring in the Source and Lesson panes | Written for this course |
@@ -190,8 +191,8 @@ Each chapter folder holds its sections, and each section holds its steps. A step
 | Part | Chapters | Status |
 |---|---|---|
 | I - Basics | Getting started, variables and input, decisions, arrays, pointers, loops | In progress. Chapters 1 to 6 are written |
-| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 14 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files, containers) are written |
-| III - Additional topics | Dynamic memory and data structures, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | Planned |
+| II - Structuring programs | Functions, files, error handling, structures, opaque types and modules, polymorphism with function pointers, headers and multiple files | In progress. Chapters 7 to 13 (functions, files, error handling, structures, structures with behavior, composition and polymorphism, headers and multiple files) are written |
+| III - Additional topics | Containers, efficiency, searching and sorting, resource cleanup, ownership, generic code, callbacks, testing, threads with pthreads, build systems, debugging and sanitizers, modern C | In progress. Chapters 14 (containers) and 15 (efficiency) are written |
 | Final project | A calculator, in two tracks: a core and bonus items | Planned |
 
 The outline is a plan and may change as the lessons are written.
@@ -225,6 +226,7 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 12 written as Composition and Polymorphism: embedding a base structure, several parts and protection (C has no protected level), polymorphism with function pointers, the summary, and two homework exercises (shapes and employee pay). C has no inheritance or virtual functions, so these are replaced by composition and function pointers |
 | 10/30/2026 | Chapter 13 written as Headers and Multiple Files: header and source, include guards, combining modules across seven files, the summary, and two homework exercises (a library and temperature utilities). The chapter closes Part II, since the C course's Part II covers chapters 7 to 13 |
 | 10/30/2026 | Chapter 14 written as Containers: a growable vector and a hash table built from malloc, choosing between arrays, vectors, hash tables, and sorted arrays, the summary, and two homework exercises (a grade book and a word tally). C's standard library has no containers, so the chapter builds them. The dynamic-memory step was added to Chapter 5, with a discussion of double free and use after free as security flaws |
+| 10/30/2026 | Chapter 15 written as Efficiency: Big O, counting operations, Fibonacci in naive, memoized, and loop forms, the summary, and two homework exercises (count pairs and stairs). The memo tables use arrays, since the keys are small whole numbers, and the input checks return codes in place of exceptions |
 
 ---
 

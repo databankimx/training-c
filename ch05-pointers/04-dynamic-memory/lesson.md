@@ -84,6 +84,30 @@ These errors are hard to find for the same reason they're dangerous: the program
 
 The same reasoning applies to the buffer overflows described in the strings and structures chapters. Writing past the end of a buffer can overwrite the same kind of data, which is why this course treats unchecked sizes as a security issue, and why each `strcpy` into a fixed buffer carries a comment that names the limit.
 
+### Finding these errors with tools
+
+The rules above prevent most memory errors, but a tool finds the ones that slip through. A memory checker runs the program and watches every allocation, free, and read. It reports a leak when a block is still allocated at exit, a double free when a block is freed twice, and a use after free when a freed block is read or written. Each report names the line where the block was allocated, which is what you need to fix it.
+
+Two checkers are used in this course:
+
+* **Dr. Memory** for Windows. Fetch it once with `resources\vendor\drmemory\fetch-drmemory.ps1`, which installs it into `resources\vendor\drmemory\install`, and prints the full path to `drmemory.exe` when it finishes. Then run a built program through it, from the step's folder, using the path the script printed:
+
+```pwsh
+<path printed by the script> -- .\build\program.exe
+```
+
+The report is written to the console and to a log folder that Dr. Memory names in its output. The `--` separates the tool's options from the program and its arguments.
+
+* **Valgrind** for Linux. It's the usual checker on Linux and macOS, and it isn't available on Windows, so readers on those systems can skip it. To run a program through it:
+
+```sh
+valgrind --leak-check=full ./program
+```
+
+Both tools slow a program down, often by a factor of ten or more, so use them on test inputs, not on large data.
+
+A clean report doesn't prove a program is safe. It shows the paths the test runs exercised. Run every path you can, including the error paths, and check that each one reports nothing.
+
 ### Ownership
 
 Every block has one owner, the code responsible for freeing it. In this program, `main` owns `numbers` and `zeros`, and frees them. When a function returns a block it allocated, the caller becomes the owner. Writing down who frees each block, in a comment at the point of allocation, prevents most leaks in a program of any size. The containers chapter applies the rule to the vector.
