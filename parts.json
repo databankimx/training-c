@@ -31,7 +31,10 @@
         "ch16-searching-and-sorting",
         "ch17-resource-management",
         "ch18-ownership-transfer",
-        "ch19-generic-code"
+        "ch19-generic-code",
+        "ch20-function-pointers-with-context",
+        "ch21-testing",
+        "ch22-concurrency"
       ]
     }
   ]
