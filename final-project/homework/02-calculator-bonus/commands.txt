@@ -1,0 +1,5 @@
+run
+run 2^3^2
+run sqrt(16)
+run demo
+test

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visualizer</title>
+<style>
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: #1e1e1e; color: #d4d4d4; margin: 0; padding: 24px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 16px; }
+  #bars { display: flex; align-items: flex-end; gap: 4px; height: 260px; padding: 8px 0 30px; border-bottom: 1px solid #555; }
+  .bar { flex: 1; min-width: 8px; background: #4f7cac; border-radius: 3px 3px 0 0; position: relative; }
+  .bar.compare { background: #dcdcaa; }
+  .bar.swap { background: #c586c0; }
+  .bar.found { background: #6a9955; }
+  .bar.sorted { background: #6a9955; opacity: 0.55; }
+  .label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #aaa; white-space: nowrap; }
+  #message { min-height: 48px; margin: 20px 0 12px; font-size: 16px; }
+  .controls { display: flex; align-items: center; gap: 8px; }
+  button { background: #0e639c; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
+  button:disabled { background: #3c3c3c; color: #888; cursor: default; }
+  select { background: #3c3c3c; color: #ddd; border: 1px solid #555; padding: 5px 8px; border-radius: 4px; }
+  input[type=range] { flex: 1; }
+  #position { min-width: 110px; font-variant-numeric: tabular-nums; }
+  #missing { color: #f48771; }
+</style>
+</head>
+<body>
+<h1 id="title">Visualizer</h1>
+<div id="bars"></div>
+<p id="message"></p>
+<div class="controls">
+  <button id="previous">Previous</button>
+  <button id="play">Play</button>
+  <button id="next">Next</button>
+  <label>Speed
+    <select id="speed" title="How long each step stays on screen while playing">
+      <option value="1200">Slow</option>
+      <option value="700" selected>Normal</option>
+      <option value="300">Fast</option>
+      <option value="100">Very fast</option>
+    </select>
+  </label>
+  <input id="slider" type="range" min="0" max="0" value="0">
+  <span id="position"></span>
+</div>
+<p id="missing" hidden>No trace found. Press Run in the lesson runner first, then press Visualize again.</p>
+
+<script src="trace.js"></script>
+<script>
+(function () {
+  if (typeof window.trace === "undefined") {
+    document.getElementById("missing").hidden = false;
+    document.querySelectorAll("button, input").forEach((control) => (control.disabled = true));
+    return;
+  }
+
+  const trace = window.trace;
+  const frames = trace.frames;
+  const bars = document.getElementById("bars");
+  const message = document.getElementById("message");
+  const slider = document.getElementById("slider");
+  const position = document.getElementById("position");
+  const playButton = document.getElementById("play");
+  const speed = document.getElementById("speed");
+  let current = 0;
+  let timer = null;
+
+  document.getElementById("title").textContent = trace.title + (trace.target !== undefined ? " (target " + trace.target + ")" : "");
+  slider.max = frames.length - 1;
+
+  // Draws one frame: each bar's height is its value, and the frame's marks color the bars it refers to.
+  function show(index) {
+    current = Math.max(0, Math.min(frames.length - 1, index));
+    const frame = frames[current];
+    const values = frame.array;
+    const lowest = Math.min(...values);
+    const highest = Math.max(...values);
+    const range = highest - lowest || 1;
+
+    bars.replaceChildren();
+    values.forEach((value, i) => {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.height = 10 + ((value - lowest) / range) * 220 + "px";
+      if (frame.sorted && frame.sorted.includes(i)) bar.classList.add("sorted");
+      if (frame.compare && frame.compare.includes(i)) bar.classList.add("compare");
+      if (frame.swap && frame.swap.includes(i)) bar.classList.add("swap");
+      if (frame.found === i) bar.classList.add("found");
+
+      const label = document.createElement("span");
+      label.className = "label";
+      label.textContent = value;
+      bar.append(label);
+      bars.append(bar);
+    });
+
+    message.textContent = frame.message;
+    slider.value = current;
+    position.textContent = "Step " + (current + 1) + " of " + frames.length;
+    document.getElementById("previous").disabled = current === 0;
+    document.getElementById("next").disabled = current === frames.length - 1;
+  }
+
+  function stop() {
+    clearInterval(timer);
+    timer = null;
+    playButton.textContent = "Play";
+  }
+
+  playButton.addEventListener("click", () => {
+    if (timer) {
+      stop();
+      return;
+    }
+    if (current === frames.length - 1) show(0);
+    playButton.textContent = "Pause";
+    timer = setInterval(() => {
+      if (current >= frames.length - 1) {
+        stop();
+        return;
+      }
+      show(current + 1);
+    }, Number(speed.value));
+  });
+
+  // Changing the speed while playing restarts the timer at the new rate.
+  speed.addEventListener("change", () => {
+    if (timer) {
+      stop();
+      playButton.click();
+    }
+  });
+
+  document.getElementById("previous").addEventListener("click", () => { stop(); show(current - 1); });
+  document.getElementById("next").addEventListener("click", () => { stop(); show(current + 1); });
+  slider.addEventListener("input", () => { stop(); show(Number(slider.value)); });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") { stop(); show(current - 1); }
+    if (event.key === "ArrowRight") { stop(); show(current + 1); }
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

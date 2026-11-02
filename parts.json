@@ -1,0 +1,45 @@
+{
+  "parts": [
+    {
+      "title": "Part I - Basics",
+      "chapters": [
+        "ch01-getting-started",
+        "ch02-variables-and-input",
+        "ch03-decisions",
+        "ch04-arrays",
+        "ch05-pointers",
+        "ch06-loops"
+      ]
+    },
+    {
+      "title": "Part II - Structuring programs",
+      "chapters": [
+        "ch07-functions",
+        "ch08-files",
+        "ch09-error-handling",
+        "ch10-structures",
+        "ch11-structures-with-behavior",
+        "ch12-composition-and-polymorphism",
+        "ch13-headers-and-multiple-files"
+      ]
+    },
+    {
+      "title": "Part III - Additional topics",
+      "chapters": [
+        "ch14-containers",
+        "ch15-efficiency",
+        "ch16-searching-and-sorting",
+        "ch17-resource-management",
+        "ch18-ownership-transfer",
+        "ch19-generic-code",
+        "ch20-function-pointers-with-context",
+        "ch21-testing",
+        "ch22-concurrency",
+        "ch23-build-systems",
+        "ch24-debugging-and-sanitizers",
+        "ch25-modern-features",
+        "final-project"
+      ]
+    }
+  ]
+}

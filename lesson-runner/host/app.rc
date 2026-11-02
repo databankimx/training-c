@@ -1,0 +1,2 @@
+// app.rc: the program's icon, embedded at build time. Resource ID 1 is the icon that app.c loads for the window.
+1 ICON "app.ico"

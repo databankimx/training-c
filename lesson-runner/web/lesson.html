@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lesson</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      html { overflow: auto; height: auto; }
+      body { overflow: visible; height: auto; }
+      .lesson-page { padding: 16px 32px 40px; max-width: 900px; margin: 0 auto; }
+      .lesson-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--panel); position: sticky; top: 0; }
+      .lesson-page h1.lesson-title { font-size: 14px; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
+    </style>
+    <script type="module" src="lesson.js" defer></script>
+  </head>
+  <body>
+    <div class="lesson-toolbar">
+      <span class="pane-label">LESSON</span>
+      <button id="dock" class="icon-button" title="Dock the lesson back into the main window"></button>
+    </div>
+    <div class="lesson-page">
+      <h1 id="lesson-title" class="lesson-title"></h1>
+      <div id="lesson" class="markdown"></div>
+    </div>
+  </body>
+</html>
