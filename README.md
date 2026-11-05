@@ -100,6 +100,19 @@ cd lesson-runner
 
 The GCC runtime exception and the Graphviz license should be reviewed under section 12 of the Development Rules of Engagement before the course leaves the company. The runner itself links only the MIT, BSD, Apache, and Microsoft-licensed components above.
 
+## Third Party Licenses
+
+All dependencies and third-party components used in this training repository are listed above. They are compatible with closed-source commercial use, with the note that the GCC runtime exception and Graphviz (EPL-2.0) licenses should be reviewed before commercial deployment.
+
+**Key licensing summary:**
+- **Build tools (GCC, CMake, Ninja):** GPL-based with exceptions, BSD, and Apache 2.0
+- **Runner UI (WebView2):** Microsoft SDK license
+- **Data handling (cJSON):** MIT
+- **Rendering (marked, @viz-js/viz):** MIT, with Graphviz (EPL-2.0) wrapped
+- **Optional tools (Dr. Memory, ImageMagick, librsvg):** LGPL-2.1 with BSD modules (approved through 10/31/2026)
+
+For questions about licensing compliance, see the [Development Rules of Engagement](development-rules-of-engagement.md), section 12.
+
 ### VS Code
 
 Install the **C/C++** extension (publisher `Microsoft`). It checks your code as you type, and offers completion and navigation.
