@@ -1,0 +1,10 @@
+# DataBank Standards Policy Configuration
+# See Custom-Dev-Developer-Guide.md for full rule documentation.
+#
+# resources/vendor contains third-party libraries (cJSON, WebView2, Dr. Memory)
+# that are downloaded by setup.ps1. They are not our code and are excluded
+# from standards enforcement.
+c:
+  excluded_globs:
+    - "**/resources/vendor/**"
+    - "**/build/**"
