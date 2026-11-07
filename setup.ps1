@@ -79,7 +79,16 @@ function Invoke-Msys([string]$command) {
 function Update-Msys2 {
     # pacman can't download its package lists without DNS. Without this check, a sync failure looks like an empty update.
     $mirror = "mirror.msys2.org"
-    if (-not (Resolve-DnsName -Name $mirror -ErrorAction SilentlyContinue)) {
+    $resolved = $false
+    for ($lookup = 1; $lookup -le 4 -and -not $resolved; $lookup++) {
+        if (Resolve-DnsName -Name $mirror -ErrorAction SilentlyContinue) {
+            $resolved = $true
+        } elseif ($lookup -lt 4) {
+            Write-Host "   $mirror did not resolve (attempt $lookup of 4). Waiting 10 seconds..."
+            Start-Sleep -Seconds 10
+        }
+    }
+    if (-not $resolved) {
         Stop-Setup "This machine can't resolve $mirror, so MSYS2 can't download its packages. Check the network and DNS settings, test with: nslookup $mirror, then run this script again."
     }
     for ($attempt = 1; $attempt -le 4; $attempt++) {
