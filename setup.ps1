@@ -80,7 +80,9 @@ function Update-Msys2 {
     for ($attempt = 1; $attempt -le 4; $attempt++) {
         Write-Host "   pacman -Syu (pass $attempt)"
         $null = Invoke-Msys "yes | pacman -Syu --noconfirm"
-        if ((Invoke-Msys 'test -z "$(pacman -Qu 2>/dev/null)"') -eq 0) {
+        # pacman -Qu prints one line per pending update, and nothing when the system is up to date.
+        $pending = & (Join-Path $msys "usr\bin\bash.exe") -lc "export PATH=/ucrt64/bin:`$PATH; pacman -Qu 2>/dev/null"
+        if (-not $pending) {
             return
         }
     }
