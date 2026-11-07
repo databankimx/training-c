@@ -150,6 +150,13 @@ Some lessons use more than one source file, such as Chapter 13 (headers and mult
 
 Build and run these lessons through the lesson runner: open the step and press **Run**. The runner builds every file the step's `CMakeLists.txt` lists.
 
+In VS Code, open any `.c` file in the step's `src` folder, then use Terminal > Run Task:
+
+- `C/C++: build lesson (CMake)` configures and builds the step's project.
+- `C/C++: run lesson (CMake)` builds it, then runs the program.
+
+The runner also works for these lessons: open the step and press **Run**.
+
 To build from a terminal instead, open a terminal in the step's folder and run:
 
 ```pwsh
