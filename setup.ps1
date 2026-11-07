@@ -174,6 +174,7 @@ if (-not (Test-Path (Join-Path $bin "cmake.exe"))) { $missing += "mingw-w64-ucrt
 if (-not (Test-Path (Join-Path $bin "ninja.exe"))) { $missing += "mingw-w64-ucrt-x86_64-ninja" }
 if (-not (Test-Path (Join-Path $bin "rsvg-convert.exe"))) { $missing += "mingw-w64-ucrt-x86_64-librsvg" }
 if (-not (Test-Path (Join-Path $bin "magick.exe"))) { $missing += "mingw-w64-ucrt-x86_64-imagemagick" }
+if (-not (Test-Path (Join-Path $bin "gdb.exe"))) { $missing += "mingw-w64-ucrt-x86_64-gdb" }
 
 if ($missing.Count -gt 0) {
     $list = $missing -join " "
