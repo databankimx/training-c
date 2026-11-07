@@ -70,7 +70,7 @@ function Invoke-Winget([string]$id) {
 
 # Runs a command inside the MSYS2 UCRT64 environment, so pacman and the toolchain behave as they do in its shell.
 function Invoke-Msys([string]$command) {
-    & (Join-Path $msys "usr\bin\bash.exe") -lc "export PATH=/ucrt64/bin:`$PATH; $command"
+    & (Join-Path $msys "usr\bin\bash.exe") -lc "export PATH=/ucrt64/bin:`$PATH; $command" | Out-Host
     return $LASTEXITCODE
 }
 
@@ -182,8 +182,15 @@ if ($missing.Count -gt 0) {
         # A freshly installed MSYS2 has an out-of-date package database, so update it before installing anything.
         Update-Msys2
         Write-Host "   Installing: $list"
-        if ((Invoke-Msys "yes | pacman -S --needed --noconfirm $list") -ne 0) {
-            Stop-Setup "pacman couldn't install: $list. Check the output above."
+        # A core upgrade can close the shell mid-install, so the exit code isn't trusted. Each package is checked instead.
+        $stillMissing = @($missing)
+        for ($try = 1; $try -le 3 -and $stillMissing.Count -gt 0; $try++) {
+            Write-Host "   pacman -S (attempt $try of 3)"
+            $null = Invoke-Msys "yes | pacman -S --needed --noconfirm $($stillMissing -join ' ')"
+            $stillMissing = @($stillMissing | Where-Object { (Invoke-Msys "pacman -Q $_") -ne 0 })
+        }
+        if ($stillMissing.Count -gt 0) {
+            Stop-Setup "pacman couldn't install: $($stillMissing -join ' '). Open the MSYS2 UCRT64 shell, run: pacman -Syu, then run this script again."
         }
     } else {
         Stop-Setup ("These packages are missing: $list. Run this script with -InstallMissing, or install them " +
