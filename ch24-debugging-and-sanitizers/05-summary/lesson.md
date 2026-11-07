@@ -1,6 +1,6 @@
 ## Summary: Debugging and sanitizers
 
-This chapter covered the tools for finding bugs once a program is written, and what each one can and can't show. C's standard library provides few of them, so the chapter uses the hand-written call path, the assertion, the Windows debugger, and Dr. Memory on this toolchain, and explains the sanitizers.
+This chapter covered the tools for finding bugs once a program is written, and what each one can and can't show. C's standard library provides few of them, so the chapter uses the hand-written call path, the assertion, the Windows debugger, and GCC's static analyzer on this toolchain, and explains the run-time sanitizers.
 
 * **A call path shows how the program got somewhere.** A `TRACE` macro built on `__func__` records the calls as they start, and the debugger's call stack shows the real calls in progress.
 * **Record traces where they are needed.** A print in every call costs time, so a trace is for finding a bug, not for normal runs.
@@ -9,8 +9,8 @@ This chapter covered the tools for finding bugs once a program is written, and w
 * **An assertion's expression must not do needed work.** The expression disappears in release builds, so the work must be kept outside it.
 * **A debugger stops the program and shows its values.** Breakpoints, stepping, and the variables panel find where values go wrong.
 * **Off-by-one errors live at loop boundaries.** Check the boundary condition first.
-* **Sanitizers find memory errors and undefined behavior while the program runs.** AddressSanitizer, UndefinedBehaviorSanitizer, and ThreadSanitizer each cover a different kind of mistake.
-* **Sanitizers need a supporting toolchain.** This course's MSYS2 UCRT64 setup doesn't package them, so Dr. Memory covers the heap errors on Windows.
+* **The static analyzer finds memory mistakes from the code.** `-fanalyzer` reports double frees and use after free, without running the program. Leaks are harder to find this way, so check them by review.
+* **Run-time sanitizers need a supporting toolchain.** AddressSanitizer, UndefinedBehaviorSanitizer, and ThreadSanitizer each cover a different kind of mistake, but this course's MSYS2 UCRT64 setup doesn't package them.
 
 ### Check your understanding
 
@@ -27,11 +27,11 @@ What does a failed assertion tell you?
 ````
 
 ````quiz
-Which tool on this course's Windows toolchain reports a use of freed memory while the program runs?
+Which option finds a second free of the same pointer, without running the program?
 ○ A call path recorded with TRACE.
-→ Not quite. A call path shows the calls, not the memory being used.
-◉ Dr. Memory, fetched by the script in the dynamic-memory chapter.
-→ Yes. It reports use after free and double frees, with the line where they happen.
+→ Not quite. A call path shows the calls, not the memory being freed.
+◉ GCC's static analyzer, with the `-fanalyzer` option.
+→ Yes. It reads the code's paths, and reports the double free with the line where it happens.
 ○ A release build.
 → Not quite. Release builds are faster, but they don't check memory.
 ````

@@ -92,7 +92,6 @@ cd lesson-runner
 | Ninja | Lessons and runner | Runs the build | Apache 2.0 |
 | WebView2 SDK | Lesson runner | The runner's window | Microsoft SDK license |
 | cJSON | Lesson runner | Messages between the window and the back end | MIT |
-| Dr. Memory | Developers, optional (not bundled; fetched by resources\vendor\drmemory\fetch-drmemory.ps1) | Checks memory errors in programs built with MinGW | LGPL 2.1, with BSD-licensed modules. Approved for use 10/31/2026 under section 12 |
 | marked | Lesson runner (web folder) | Converts lesson Markdown to HTML | MIT |
 | @viz-js/viz | Lesson runner (web folder) | Draws the diagrams in lessons | MIT, which wraps Graphviz (EPL-2.0) |
 | highlight | Lesson runner (web folder) | Syntax coloring in the Source and Lesson panes | Written for this course |
@@ -109,13 +108,67 @@ All dependencies and third-party components used in this training repository are
 - **Runner UI (WebView2):** Microsoft SDK license
 - **Data handling (cJSON):** MIT
 - **Rendering (marked, @viz-js/viz):** MIT, with Graphviz (EPL-2.0) wrapped
-- **Optional tools (Dr. Memory, ImageMagick, librsvg):** LGPL-2.1 with BSD modules (approved through 10/31/2026)
+- **Setup tools (ImageMagick, librsvg):** Apache 2.0 and LGPL-2.1, used as separate tools
 
 For questions about licensing compliance, see the [Development Rules of Engagement](development-rules-of-engagement.md), section 12.
 
-### VS Code
 
-Install the **C/C++** extension (publisher `Microsoft`). It checks your code as you type, and offers completion and navigation.
+
+## Using VS Code
+
+The lessons work in any editor, but this section covers Visual Studio Code, which the course is written for. The steps are also in [QUICKSTART.md](QUICKSTART.md).
+
+### Install the extension
+
+Open a `.c` file from a lesson. VS Code offers to install the **C/C++ Extension Pack** (publisher Microsoft). Accept it, or install it from the Extensions view by searching for "C/C++ Extension Pack".
+
+The pack includes CMake Tools. When it asks for a kit, choose **GCC 16.2.0 x86_64-w64-mingw32 (ucrt64)**, the MSYS2 compiler the course uses. Don't choose **[Scan for kits]** or **[Unspecified]**, since they can select a different compiler.
+
+CMake Tools may report that it activated the runner's project in `lesson-runner`. That message is informational, and you can dismiss it.
+
+Restart VS Code after `setup.ps1` has run, so it picks up the MSYS2 folder on your user PATH. Open the repository root in VS Code, not a sub-folder.
+
+### Single-file lessons
+
+Open the lesson's `.c` file, then:
+
+- **Build:** Ctrl+Shift+B.
+- **Build and run:** Terminal > Run Task > `C/C++: run active file`. The program's output appears in the terminal.
+- **Debug:** press F5, and choose `Debug active C file (MSYS2 gdb)`. Click in the gutter first, if you want a breakpoint.
+
+These compile only the file that's open, so they work for lessons with one source file.
+
+### Multiple-file lessons
+
+Some lessons use more than one source file, such as Chapter 13 (headers and multiple files). The build and run tasks compile only the open file, so they report `undefined reference` errors for functions in the other files. That's expected.
+
+Build and run these lessons through the lesson runner: open the step and press **Run**. The runner builds every file the step's `CMakeLists.txt` lists.
+
+To build from a terminal instead, open a terminal in the step's folder and run:
+
+```pwsh
+cd C:\Development\training\training-c\ch13-headers-and-multiple-files\02-include-guards
+cmake -S . -B build -G Ninja -DCMAKE_C_COMPILER=gcc
+cmake --build build
+.\build\program.exe
+```
+
+Replace the `cd` path with the step's own folder. The `-S .` argument must point at the folder that holds the step's `CMakeLists.txt`.
+
+### Messages you can ignore
+
+- `"main.c" not found in ... compile_commands.json ... c_cpp_properties.json will be used`. The editor's settings cover the lesson's files, so this is informational.
+- `CMake Tools detected and activated the project`. This is informational.
+
+### Troubleshooting
+
+| What you see | What to do |
+|---|---|
+| `The preLaunchTask ... terminated with exit code -1` | Restart VS Code. Setup adds the MSYS2 folder to your user PATH, and VS Code only sees that after a restart. |
+| `libgcc_s_seh-1.dll was not found` | The MSYS2 folder isn't on your user PATH. Run `setup.ps1 -InstallMissing` again, then restart VS Code. |
+| `undefined reference to ...` in a single-file build | The lesson has more than one source file. Build it through the lesson runner. |
+| The debug list shows only `(Windows) Launch`, or no gdb | gdb isn't installed. Run `setup.ps1 -InstallMissing` again. |
+| The kit list shows only Scan, Unspecified, or a different GCC | Choose the GCC 16.2.0 ucrt64 kit. If it isn't listed, run the kit scan from the CMake Tools menu, then choose it. |
 
 ---
 
@@ -174,6 +227,7 @@ The runner's source code is in `lesson-runner/host` (the C back end) and `lesson
 Each step with code is a CMake project. From a terminal, in the step's folder:
 
 ```pwsh
+cd C:\Development\training\training-c\ch13-headers-and-multiple-files\02-include-guards
 cmake -S . -B build -G Ninja -DCMAKE_C_COMPILER=gcc
 cmake --build build
 .\build\program.exe
@@ -276,6 +330,7 @@ This training curriculum was developed for internal use at DataBank. As with the
 | 10/30/2026 | Chapter 25 written as Modern Features: C23 auto and named members in place of structured bindings, a flag-carrying structure in place of std::optional, the summary, and two homework exercises (word totals and safe division). Chapter 25's CMake files set the standard to C23, the only chapters that do so. C has no structured bindings or optional type, so their C forms are shown |
 | 10/30/2026 | Final project written in C as A Calculator, at final-project in the repository root, as in the C++ course. The core has a recursive-descent parser that records errors in a structure, with selftest and demo modes registered with CTest. The bonus step adds ^, sqrt, and square and curly brackets, and links the math library. Chapter 25 and the final project are not yet tested |
 | 11/01/2026 | Release: the C course, chapters 1 to 25 and the final project, is complete. Chapters 17 to 24 were built and tested, and Chapter 25 and the final project were tested before this release. The runner's quick picks, visualizer, and debug switch are documented in AUTHORING.md and QUICKSTART.md |
+| 11/07/2026 | Chapters 5 and 24 use GCC's static analyzer (`-fanalyzer`) in place of Dr. Memory, which didn't run reliably on the test machines. QUICKSTART section 8 and the libraries table are updated to match |
 
 ---
 
