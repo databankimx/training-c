@@ -8,15 +8,20 @@ Commands are for **Windows PowerShell**, and assume you're in the repository roo
 
 ## Where to clone the repository
 
-Clone the repository under `C:\Development`, for example `C:\Development\training\training-c`. The lesson runner builds and runs each exercise inside the repository, in a folder called `.lesson-runner`. Security software on managed machines is set up to allow that folder when it's under `C:\Development`. A copy somewhere else, such as your Downloads folder or a temporary folder, may have its new programs removed as they're built.
+Clone the repository under `C:\Development`, for example `C:\Development\training\training-c`. The repository has two build folders, and they do different jobs:
+
+- `lesson-runner\build` holds the lesson runner, the program with the window and the list of chapters. `setup.ps1` builds it.
+- `.lesson-runner` holds the builds of the exercises. The runner creates it the first time you press **Run** on a step, and each step's program is built there.
+
+Security software on managed machines is set up to allow those folders when they're under `C:\Development`. A copy somewhere else, such as your Downloads folder or a temporary folder, may have its new programs removed as they're built.
 
 ---
 
 ## Quick setup with the script
 
-`setup.ps1` checks the toolchain, downloads the vendored libraries, makes the runner's icon, and builds the runner. It's safe to run more than once.
+`setup.ps1` installs what's missing, clones the repository if you don't have it yet, checks the toolchain, downloads the vendored libraries, makes the runner's icon, and builds the runner. It's safe to run more than once.
 
-First, install **MSYS2** (step 1 below). Then, from the repository root:
+Open **PowerShell as Administrator**, go to the folder where you saved `setup.ps1`, and run:
 
 ```pwsh
 powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing
@@ -24,13 +29,21 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing
 
 The `-ExecutionPolicy Bypass` part lets this one script run. It doesn't change any setting on your machine.
 
-With `-InstallMissing`, the script installs the MSYS2 packages it's missing, using pacman. Without it, the script stops and shows the pacman command to run. Company policy can block package installs, in which case the script says so, and you'll need IT.
+With `-InstallMissing`, the script:
 
-When the script finishes, it prints a summary. Steps 1 to 5 below cover the same work, if you need to see what the script does, or run one part by hand.
+- installs **Git** and **MSYS2** with winget, if they're missing
+- clones the repository into `C:\Development\training\training-c`, if the script isn't already inside it, and continues from the clone
+- installs the MSYS2 packages it's missing, and updates MSYS2 with `pacman -Syu`
+
+An Administrator window is needed for the installs. Without `-InstallMissing`, the script doesn't install anything. It stops and shows what's missing, and the command to fix it. Company policy can block installs, in which case the script says so, and you'll need IT.
+
+When the script finishes, it prints a summary. Steps 1 to 5 below cover the same work, if you need to see what the script does, or want to run one part by hand.
 
 ---
 
 ## 1. Install MSYS2
+
+The script does this step with `-InstallMissing`. Follow these steps by hand only if the script stopped at MSYS2, or you want to install it yourself.
 
 Download the installer from [msys2.org](https://www.msys2.org) and install it to the default folder, `C:\msys64`.
 
@@ -146,7 +159,7 @@ The script downloads the newest release into `resources\vendor\drmemory\install`
 
 | What you see | What to do |
 |---|---|
-| The setup script says MSYS2 isn't installed | Install MSYS2 to `C:\msys64` (step 1). |
+| The setup script says MSYS2 isn't installed | Run the script with `-InstallMissing` from an Administrator PowerShell, or install MSYS2 to `C:\msys64` (step 1). |
 | The setup script says a package is missing | Run it again with `-InstallMissing`, or run the pacman command it shows, in the MSYS2 UCRT64 shell. |
 | `gcc` is version 13 or earlier | Run `pacman -Syu` in the MSYS2 UCRT64 shell, then open a new shell. |
 | The runner says `Could not start CMake` | The build tool isn't in `C:\msys64\ucrt64\bin`. Check step 2, then restart the runner. |
