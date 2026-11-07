@@ -77,6 +77,11 @@ function Invoke-Msys([string]$command) {
 # Updates MSYS2 until nothing is pending. Upgrading the core runtime closes every MSYS2 process, including the shell that
 # runs pacman, so a non-zero exit here is expected. The result is checked instead: is anything still pending?
 function Update-Msys2 {
+    # pacman can't download its package lists without DNS. Without this check, a sync failure looks like an empty update.
+    $mirror = "mirror.msys2.org"
+    if (-not (Resolve-DnsName -Name $mirror -ErrorAction SilentlyContinue)) {
+        Stop-Setup "This machine can't resolve $mirror, so MSYS2 can't download its packages. Check the network and DNS settings, test with: nslookup $mirror, then run this script again."
+    }
     for ($attempt = 1; $attempt -le 4; $attempt++) {
         Write-Host "   pacman -Syu (pass $attempt)"
         $null = Invoke-Msys "yes | pacman -Syu --noconfirm"
