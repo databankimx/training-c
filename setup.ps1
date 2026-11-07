@@ -168,6 +168,15 @@ if (-not (Test-Path (Join-Path $msys "ucrt64"))) {
 # The toolchain's folder goes first on PATH, for this script and for the programs it starts.
 $env:Path = "$bin;$env:Path"
 
+# gcc's compiler stage and gdb load DLLs from this folder. VS Code and its debugger start from the user PATH, so the
+# folder has to be on that too. Without it, a build works in this window and fails in VS Code.
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if (-not $userPath -or (($userPath -split ';') -notcontains $bin)) {
+    $newUserPath = if ($userPath) { "$bin;$userPath" } else { $bin }
+    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+    Add-Warning "Added $bin to your user PATH. Restart VS Code, and any open terminals, to pick it up."
+}
+
 $missing = @()
 if (-not (Test-Path (Join-Path $bin "gcc.exe"))) { $missing += "mingw-w64-ucrt-x86_64-gcc" }
 if (-not (Test-Path (Join-Path $bin "cmake.exe"))) { $missing += "mingw-w64-ucrt-x86_64-cmake" }
