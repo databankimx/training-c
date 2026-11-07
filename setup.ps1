@@ -70,22 +70,21 @@ function Invoke-Winget([string]$id) {
 
 # Runs a command inside the MSYS2 UCRT64 environment, so pacman and the toolchain behave as they do in its shell.
 function Invoke-Msys([string]$command) {
-    & (Join-Path $msys "usr\bin\bash.exe") -lc $command
+    & (Join-Path $msys "usr\bin\bash.exe") -lc "export PATH=/ucrt64/bin:`$PATH; $command"
     return $LASTEXITCODE
 }
 
-# Updates MSYS2 until nothing is pending. A pacman update can replace its own runtime, which needs a second pass.
+# Updates MSYS2 until nothing is pending. Upgrading the core runtime closes every MSYS2 process, including the shell that
+# runs pacman, so a non-zero exit here is expected. The result is checked instead: is anything still pending?
 function Update-Msys2 {
-    for ($attempt = 1; $attempt -le 3; $attempt++) {
-        Write-Host "   pacman -Syu (pass $attempt of 3)"
-        if ((Invoke-Msys "pacman -Syu --noconfirm") -ne 0) {
-            Stop-Setup "pacman -Syu failed. Check the output above."
-        }
+    for ($attempt = 1; $attempt -le 4; $attempt++) {
+        Write-Host "   pacman -Syu (pass $attempt)"
+        $null = Invoke-Msys "yes | pacman -Syu --noconfirm"
         if ((Invoke-Msys 'test -z "$(pacman -Qu 2>/dev/null)"') -eq 0) {
             return
         }
     }
-    Stop-Setup "MSYS2 still has updates pending after 3 passes. Run: pacman -Syu, in the MSYS2 UCRT64 shell."
+    Stop-Setup "MSYS2 still has updates pending after 4 passes. Open the MSYS2 UCRT64 shell, run: pacman -Syu, and run this script again."
 }
 
 Write-Host ""
@@ -172,18 +171,16 @@ if (-not (Test-Path (Join-Path $bin "magick.exe"))) { $missing += "mingw-w64-ucr
 if ($missing.Count -gt 0) {
     $list = $missing -join " "
     if ($InstallMissing) {
+        # A freshly installed MSYS2 has an out-of-date package database, so update it before installing anything.
+        Update-Msys2
         Write-Host "   Installing: $list"
-        if ((Invoke-Msys "pacman -S --needed --noconfirm $list") -ne 0) {
+        if ((Invoke-Msys "yes | pacman -S --needed --noconfirm $list") -ne 0) {
             Stop-Setup "pacman couldn't install: $list. Check the output above."
         }
     } else {
         Stop-Setup ("These packages are missing: $list. Run this script with -InstallMissing, or install them " +
             "from the MSYS2 UCRT64 shell with: pacman -S --needed $list")
     }
-}
-
-if ($InstallMissing) {
-    Update-Msys2
 }
 
 $version = (& (Join-Path $bin "gcc.exe") --version | Select-Object -First 1)
