@@ -50,6 +50,10 @@ function Add-Warning([string]$message) {
     Write-Host "   WARNING: $message" -ForegroundColor Yellow
 }
 
+function Write-Note([string]$message) {
+    Write-Host "   $message"
+}
+
 function Test-Administrator {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($identity)
