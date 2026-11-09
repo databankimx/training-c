@@ -24,18 +24,18 @@ Security software on managed machines is set up to allow those folders when they
 Open **PowerShell as Administrator**, go to the folder where you saved `setup.ps1`, and run:
 
 ```pwsh
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
 The `-ExecutionPolicy Bypass` part lets this one script run. It doesn't change any setting on your machine.
 
-With `-InstallMissing`, the script:
+By default, the script:
 
 - installs **Git** and **MSYS2** with winget, if they're missing
 - clones the repository into `C:\Development\training\training-c`, if the script isn't already inside it, and continues from the clone
 - installs the MSYS2 packages it's missing, and updates MSYS2 with `pacman -Syu`
 
-An Administrator window is needed for the installs. Without `-InstallMissing`, the script doesn't install anything. It stops and shows what's missing, and the command to fix it. Company policy can block installs, in which case the script says so, and you'll need IT.
+An Administrator window is needed, because the script installs by default. To check only, without installing anything, run `powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing:$false`. It stops and shows what's missing, and the command to fix it. Company policy can block installs, in which case the script says so, and you'll need IT.
 
 When the script finishes, it prints a summary. Steps 1 to 5 below cover the same work, if you need to see what the script does, or want to run one part by hand.
 
@@ -43,7 +43,7 @@ When the script finishes, it prints a summary. Steps 1 to 5 below cover the same
 
 ## 1. Install MSYS2
 
-The script does this step with `-InstallMissing`. Follow these steps by hand only if the script stopped at MSYS2, or you want to install it yourself.
+The script does this step by default. Follow these steps by hand only if the script stopped at MSYS2, or you want to install it yourself.
 
 Download the installer from [msys2.org](https://www.msys2.org) and install it to the default folder, `C:\msys64`.
 
@@ -86,7 +86,7 @@ The lesson runner shows its window with the WebView2 runtime, which Windows 11 i
 From the repository root:
 
 ```pwsh
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
 The script downloads the WebView2 SDK into `resources\vendor\webview2`, and cJSON into `resources\vendor\cjson`. It makes `lesson-runner\host\app.ico` from the blue logo, and builds the runner into `lesson-runner\build`.
@@ -114,11 +114,64 @@ cmake --build build
 
 ---
 
-## 6. Set up VS Code (optional, recommended)
+## 6. If you're using VS Code
 
-Install VS Code from [code.visualstudio.com](https://code.visualstudio.com), and add the **C/C++** extension (publisher `Microsoft`). It gives you the editor features for C, such as code completion and error squiggles. Open the repository root (not a sub-folder) in VS Code.
+VS Code is optional, but the course is written for it, and these steps set it up.
 
-**Check:** the Extensions view lists C/C++ as installed.
+### Install VS Code and the extension
+
+Install VS Code from [code.visualstudio.com](https://code.visualstudio.com). Open the repository root in VS Code, not a sub-folder, and open a `.c` file from a lesson.
+
+VS Code offers to install the **C/C++ Extension Pack** (publisher Microsoft). Accept it, or install it from the Extensions view by searching for "C/C++ Extension Pack".
+
+The pack includes CMake Tools. When it asks for a kit, choose **GCC 16.2.0 x86_64-w64-mingw32 (ucrt64)**, the MSYS2 compiler the course uses. Don't choose **[Scan for kits]** or **[Unspecified]**, since they can select a different compiler.
+
+CMake Tools may report that it activated the runner's project in `lesson-runner`. That message is informational, and you can dismiss it.
+
+Restart VS Code after `setup.ps1` has run, so it picks up the MSYS2 folder on your user PATH.
+
+**Check:** the Extensions view lists C/C++ as installed, and the kit you chose appears in the status bar.
+
+### Single-file lessons
+
+Open the lesson's `.c` file, then:
+
+- **Build:** Ctrl+Shift+B.
+- **Build and run:** Terminal > Run Task > `C/C++: run active file`. The program's output appears in the terminal.
+- **Debug:** press F5, and choose `Debug active C file (MSYS2 gdb)`. Click in the gutter first, if you want a breakpoint.
+
+These compile only the file that's open, so they work for lessons with one source file.
+
+**Check:** the Run Task above prints the lesson's output in the terminal.
+
+### Multiple-file lessons
+
+Some lessons use more than one source file, such as Chapter 13 (headers and multiple files). The build and run tasks compile only the open file, so they report `undefined reference` errors for functions in the other files. That's expected.
+
+Build and run these lessons through the lesson runner: open the step and press **Run**. The runner builds every file the step's `CMakeLists.txt` lists.
+
+In VS Code, open any `.c` file in the step's `src` folder, then use Terminal > Run Task:
+
+- `C/C++: build lesson (CMake)` configures and builds the step's project.
+- `C/C++: run lesson (CMake)` builds it, then runs the program.
+
+The runner also works for these lessons: open the step and press **Run**.
+
+To build from a terminal instead, open a terminal in the step's folder and run:
+
+```pwsh
+cd C:\Development\training\training-c\ch13-headers-and-multiple-files\02-include-guards
+cmake -S . -B build -G Ninja -DCMAKE_C_COMPILER=gcc
+cmake --build build
+.\build\program.exe
+```
+
+Replace the `cd` path with the step's own folder. The `-S .` argument must point at the folder that holds the step's `CMakeLists.txt`.
+
+### Messages you can ignore
+
+- `"main.c" not found in ... compile_commands.json ... c_cpp_properties.json will be used`. The editor's settings cover the lesson's files, so this is informational.
+- `CMake Tools detected and activated the project`. This is informational.
 
 ---
 
@@ -141,17 +194,17 @@ The first run of each step builds it, so it can take several seconds.
 
 ---
 
-## 8. Optional: Dr. Memory
+## 8. The static analyzer
 
-The malloc step in Chapter 5 uses Dr. Memory to check memory errors on Windows. It's optional, and the course doesn't need it to run. To install it, from the repository root:
+The course checks memory errors with GCC's static analyzer, `-fanalyzer`. It's built into the compiler you already installed in step 2, so it needs no extra install. Add the option to any compile command:
 
 ```pwsh
-powershell -ExecutionPolicy Bypass -File .\resources\vendor\drmemory\fetch-drmemory.ps1
+gcc -fanalyzer -g main.c -o main.exe
 ```
 
-The script downloads the newest release into `resources\vendor\drmemory\install`, and prints the path to `drmemory.exe`. The download is ignored by git, so it isn't committed.
+**Check:** compile a program that frees the same pointer twice, and the analyzer reports a `double-'free'` warning.
 
-**Check:** the script's last line gives the path to `drmemory.exe`.
+On Linux and macOS, Valgrind is the usual run-time checker. It isn't available on Windows, so you can skip it there.
 
 ---
 
@@ -159,8 +212,8 @@ The script downloads the newest release into `resources\vendor\drmemory\install`
 
 | What you see | What to do |
 |---|---|
-| The setup script says MSYS2 isn't installed | Run the script with `-InstallMissing` from an Administrator PowerShell, or install MSYS2 to `C:\msys64` (step 1). |
-| The setup script says a package is missing | Run it again with `-InstallMissing`, or run the pacman command it shows, in the MSYS2 UCRT64 shell. |
+| The setup script says MSYS2 isn't installed | Run the script from an Administrator PowerShell, since it installs by default, or install MSYS2 to `C:\msys64` (step 1). |
+| The setup script says a package is missing | Run it again from an Administrator PowerShell, or run the pacman command it shows, in the MSYS2 UCRT64 shell. |
 | `gcc` is version 13 or earlier | Run `pacman -Syu` in the MSYS2 UCRT64 shell, then open a new shell. |
 | The runner says `Could not start CMake` | The build tool isn't in `C:\msys64\ucrt64\bin`. Check step 2, then restart the runner. |
 | Run says the step didn't build a program | The step's `CMakeLists.txt` should build an executable called `program`. This is a problem in the step, not in your setup. |
@@ -171,5 +224,10 @@ The script downloads the newest release into `resources\vendor\drmemory\install`
 | The Visualize button doesn't appear | The step's program must write `trace.js` when it runs. Press **Run** once, then check whether the button appears. |
 | The Visualize page says "No trace found" | Press **Run** in the step first. The page reads the `trace.js` that the last run wrote. |
 | The Visualize button opens a page that doesn't animate | Check that the Output pane shows no error from the program, then press **Visualize** again after a successful run. |
+| `The preLaunchTask ... terminated with exit code -1` in VS Code | Restart VS Code. Setup adds the MSYS2 folder to your user PATH, and VS Code only sees that after a restart. |
+| `libgcc_s_seh-1.dll was not found` | The MSYS2 folder isn't on your user PATH. Run `setup.ps1` again from an Administrator PowerShell, then restart VS Code. |
+| `undefined reference to ...` in a single-file build | The lesson has more than one source file. Build it through the lesson runner. |
+| The debug list shows only `(Windows) Launch`, or no gdb | gdb isn't installed. Run `setup.ps1` again from an Administrator PowerShell. |
+| The kit list shows only Scan, Unspecified, or a different GCC | Choose the GCC 16.2.0 ucrt64 kit. If it isn't listed, run the kit scan from the CMake Tools menu, then choose it. |
 
 If a problem isn't listed here, note the step you were on and the full error text, and report it. Include the Output pane text, because the first error is often the useful one.

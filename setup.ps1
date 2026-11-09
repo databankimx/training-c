@@ -18,7 +18,7 @@
 #   powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing
 
 param(
-    [switch]$InstallMissing,
+    [bool]$InstallMissing = $true,
     [string]$RepoUrl = "https://github.com/databankimx/training-c.git",
     [string]$Branch = "main"
 )
@@ -146,8 +146,7 @@ if (-not (Test-Path (Join-Path $root "QUICKSTART.md"))) {
         $repoRoot = $defaultRepoPath
     }
     Write-Host "   Continuing from the repository at $repoRoot"
-    $childParams = @{}
-    if ($InstallMissing) { $childParams["InstallMissing"] = $true }
+    $childParams = @{ InstallMissing = $InstallMissing }
     & (Join-Path $repoRoot "setup.ps1") @childParams
     exit $LASTEXITCODE
 }
@@ -331,6 +330,38 @@ if (-not (Test-Path $propsFile)) {
 $summary["Lesson runner"] = "built (lesson-runner\build)"
 
 # Summary -----------------------------------------------------------------------------------------------
+
+# VS Code and the C/C++ extension --------------------------------------------------------------------
+
+Write-Step "VS Code and the C/C++ Extension Pack"
+$codeCommand = Get-Command code -ErrorAction SilentlyContinue
+if (-not $codeCommand -and $InstallMissing) {
+    Write-Note "VS Code isn't on PATH, so it will be installed with winget."
+    & winget install --id Microsoft.VisualStudioCode -e --accept-package-agreements --accept-source-agreements
+    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne -1978335189) {
+        Add-Warning "VS Code couldn't be installed with winget (exit code $LASTEXITCODE). Install it from code.visualstudio.com, then run this script again."
+    }
+    foreach ($folder in @((Join-Path $env:LOCALAPPDATA "Programs\Microsoft VS Code\bin"), (Join-Path $env:ProgramFiles "Microsoft VS Code\bin"))) {
+        if (Test-Path (Join-Path $folder "code.cmd")) { $env:Path = "$folder;$env:Path" }
+    }
+    $codeCommand = Get-Command code -ErrorAction SilentlyContinue
+}
+if (-not $codeCommand) {
+    Add-Warning "VS Code isn't on PATH, so the C/C++ Extension Pack wasn't installed. Install VS Code (winget install --id Microsoft.VisualStudioCode -e), open a new PowerShell window, and run this script again."
+    $summary["VS Code"] = "missing"
+} else {
+    $summary["VS Code"] = "ok"
+    $installedExtensions = (& code --list-extensions 2>$null)
+    if ($installedExtensions -contains "ms-vscode.cpptools-extension-pack") {
+        Write-Note "The C/C++ Extension Pack is already installed."
+    } else {
+        Write-Note "Installing the C/C++ Extension Pack..."
+        & code --install-extension ms-vscode.cpptools-extension-pack
+        if ($LASTEXITCODE -ne 0) {
+            Add-Warning "The C/C++ Extension Pack couldn't be installed. In VS Code, install 'C/C++ Extension Pack' from the Extensions view."
+        }
+    }
+}
 
 Write-Step "Summary"
 foreach ($item in $summary.GetEnumerator()) {

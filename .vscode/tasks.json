@@ -43,6 +43,69 @@
                 "isDefault": false
             },
             "detail": "Builds the active C file, then runs it in the terminal."
+        },
+        {
+            "label": "C/C++: configure lesson (CMake)",
+            "type": "process",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${fileDirname}/..",
+                "-B",
+                "${fileDirname}/../build",
+                "-G",
+                "Ninja",
+                "-DCMAKE_C_COMPILER=gcc"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Configures the lesson's CMake project, for a lesson with several source files."
+        },
+        {
+            "label": "C/C++: build lesson (CMake)",
+            "type": "process",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${fileDirname}/../build"
+            ],
+            "dependsOn": "C/C++: configure lesson (CMake)",
+            "dependsOrder": "sequence",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "Builds every source file in the lesson's CMake project, for a lesson with several source files."
+        },
+        {
+            "label": "C/C++: run lesson (CMake)",
+            "type": "process",
+            "command": "${fileDirname}/../build/program.exe",
+            "dependsOn": "C/C++: build lesson (CMake)",
+            "dependsOrder": "sequence",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "detail": "Builds the lesson's CMake project, then runs its program in the terminal."
         }
     ],
     "version": "2.0.0"

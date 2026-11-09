@@ -32,7 +32,7 @@ int main(void) {
     }
     printf("%d %d\n", zeros[0], zeros[1]);
 
-    free(zeros);
+    //free(zeros);
     free(numbers);
     numbers = NULL;
 

@@ -80,33 +80,64 @@ These errors are hard to find for the same reason they're dangerous: the program
 
 * Set each pointer to `NULL` immediately after `free`, so a later check catches the use.
 * Free each block once, in the function that owns it, and write the owner down at the allocation.
-* Use a memory checker while developing. The debugging and sanitizers chapter covers AddressSanitizer, which reports both errors at the point they happen.
+* Compile with GCC's static analyzer, `-fanalyzer`, while developing. The section below shows how.
 
 The same reasoning applies to the buffer overflows described in the strings and structures chapters. Writing past the end of a buffer can overwrite the same kind of data, which is why this course treats unchecked sizes as a security issue, and why each `strcpy` into a fixed buffer carries a comment that names the limit.
 
 ### Finding these errors with tools
 
-The rules above prevent most memory errors, but a tool finds the ones that slip through. A memory checker runs the program and watches every allocation, free, and read. It reports a leak when a block is still allocated at exit, a double free when a block is freed twice, and a use after free when a freed block is read or written. Each report names the line where the block was allocated, which is what you need to fix it.
+The rules above prevent most memory errors, but a checker finds the ones that slip through. Some checkers read the code when it's compiled, and others watch the program while it runs.
 
-Two checkers are used in this course:
-
-* **Dr. Memory** for Windows. Fetch it once with `resources\vendor\drmemory\fetch-drmemory.ps1`, which installs it into `resources\vendor\drmemory\install`, and prints the full path to `drmemory.exe` when it finishes. Then run a built program through it, from the step's folder, using the path the script printed:
+In this course, use GCC's static analyzer. It needs no extra libraries, so it works on the MSYS2 toolchain. Add `-fanalyzer` to the compile command:
 
 ```pwsh
-<path printed by the script> -- .\build\program.exe
+gcc -fanalyzer -g main.c -o main.exe
 ```
 
-The report is written to the console and to a log folder that Dr. Memory names in its output. The `--` separates the tool's options from the program and its arguments.
+It reports a double free or a use after free, with the line where the block was allocated and each step that led to the error. Its leak warnings are less reliable, so review each `malloc` for a matching `free` yourself. Here's the output for a program that frees the same block twice:
 
-* **Valgrind** for Linux. It's the usual checker on Linux and macOS, and it isn't available on Windows, so readers on those systems can skip it. To run a program through it:
+```text
+main.c:6:5: warning: double-'free' of 'p' [CWE-415] [-Wanalyzer-double-free]
+    4 |     int *p = malloc(sizeof *p);
+      |              ^~~~~~~~~~~~~~~~~
+      |              (1) allocated here
+    5 |     free(p);
+      |     (2) first 'free' here
+    6 |     free(p);
+      |     (3) second 'free' here; first 'free' was at (2)
+```
+
+The analyzer works from the paths it can follow, so it can miss an error that depends on input it can't predict, and it can report a path the program never takes. Read each warning and check it against the code. Run it on your own programs as you write them, and rerun it after each change.
+
+The analyzer also reports a `malloc` result that's used without a check. This program writes through `p` without testing it:
+
+```c
+#include <stdlib.h>
+
+int main(void) {
+    int *p = malloc(10 * sizeof *p);
+    p[0] = 1;
+    return 0;
+}
+```
+
+```text
+leak.c:5:10: warning: dereference of possibly-NULL 'p' [CWE-690] [-Wanalyzer-possible-null-dereference]
+```
+
+The warning points to the `malloc` call, and to the line where `p` is used. The first rule of this step, checking the result right after `malloc`, is the fix.
+
+The analyzer does not report every leak. In the program above, it doesn't report the missing `free`, even with `-Wanalyzer-malloc-leak`, so check for leaks by review.
+
+On Linux and macOS, Valgrind is the usual run-time checker. It isn't available on Windows, so readers on those systems can skip it. To run a program through it:
 
 ```sh
 valgrind --leak-check=full ./program
 ```
 
-Both tools slow a program down, often by a factor of ten or more, so use them on test inputs, not on large data.
+Valgrind slows a program down, often by a factor of ten or more, so use it on test inputs, not on large data.
 
-A clean report doesn't prove a program is safe. It shows the paths the test runs exercised. Run every path you can, including the error paths, and check that each one reports nothing.
+A clean report doesn't prove a program is safe. The analyzer and Valgrind check the paths the code and the tests reach. Run every path you can, including the error paths, and check that each one reports nothing.
 
 ### Ownership
 
@@ -144,7 +175,7 @@ Why does `realloc` get its result stored in a new variable?
 
 Delete the line `numbers = NULL;`, and add a second `free(numbers);` after the first. Predict the result before you press **Run**. The result is undefined: the block has been freed twice, and the program may crash, print a warning on some systems, or appear to finish. That's the double-free error, and it's why the pointer is set to `NULL` after each free. Restore the program before you continue.
 
-Then remove the `free(zeros);` line, and predict whether the program still prints the same output. It does, since the leak doesn't affect the output, but the block is never returned. This is the most common kind of memory error, and it's invisible without a tool that counts allocations, which the debugging chapter covers.
+Then remove the `free(zeros);` line, and predict whether the program still prints the same output. It does, since the leak doesn't affect the output, but the block is never returned. Leaks like this are the most common kind of memory error, and the analyzer may not report them. Check for them by review: every `malloc` needs a `free` on every path.
 
 ---
 
