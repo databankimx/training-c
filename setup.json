@@ -3,7 +3,7 @@
   "name": "Working With C",
   "folder": "training-c",
   "repoUrl": "https://github.com/databankimx/training-c.git",
-  "branch": "dev",
+  "branch": "main",
   "baseDirectory": "C:\\Development\\training",
   "runTests": false,
   "installs": {
