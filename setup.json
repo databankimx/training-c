@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 2,
+  "name": "Working With C",
+  "folder": "training-c",
+  "repoUrl": "https://github.com/databankimx/training-c.git",
+  "branch": "dev",
+  "baseDirectory": "C:\\Development\\training",
+  "runTests": false,
+  "installs": {
+    "git": { "install": true, "winget": "Git.Git" },
+    "powershell7": { "install": true, "pinned": "7", "winget": "Microsoft.PowerShell" },
+    "msys2": {
+      "install": true,
+      "root": "C:\\msys64",
+      "packages": [
+        "mingw-w64-ucrt-x86_64-gcc",
+        "mingw-w64-ucrt-x86_64-cmake",
+        "mingw-w64-ucrt-x86_64-ninja",
+        "mingw-w64-ucrt-x86_64-gdb",
+        "mingw-w64-ucrt-x86_64-librsvg",
+        "mingw-w64-ucrt-x86_64-imagemagick"
+      ]
+    },
+    "vscode": { "install": true, "pinned": "1", "winget": "Microsoft.VisualStudioCode", "extensions": [ "ms-vscode.cpptools-extension-pack" ] }
+  },
+  "steps": [
+    {
+      "name": "WebView2 SDK",
+      "type": "command",
+      "folder": "resources\\vendor\\webview2",
+      "exe": "powershell",
+      "args": [ "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "fetch-webview2.ps1" ],
+      "check": "sdk\\build\\native\\include\\WebView2.h"
+    },
+    {
+      "name": "cJSON source",
+      "type": "command",
+      "folder": "resources\\vendor\\cjson",
+      "exe": "powershell",
+      "args": [ "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "fetch-cjson.ps1" ],
+      "check": "cJSON.c"
+    },
+    {
+      "name": "Title-bar icon",
+      "type": "command",
+      "folder": ".",
+      "exe": "magick",
+      "args": [ "-background", "none", "resources/Icon_Blue.svg", "-define", "icon:auto-resize=256,48,32,16", "lesson-runner/host/app.ico" ],
+      "check": "lesson-runner\\host\\app.ico",
+      "pathPrepend": [ "C:\\msys64\\ucrt64\\bin" ],
+      "requires": [ "msys2" ]
+    },
+    {
+      "name": "Configure the runner",
+      "type": "command",
+      "folder": "lesson-runner",
+      "exe": "cmake",
+      "args": [ "-S", ".", "-B", "build", "-G", "Ninja", "-DCMAKE_C_COMPILER=gcc", "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ],
+      "pathPrepend": [ "C:\\msys64\\ucrt64\\bin" ],
+      "requires": [ "msys2" ]
+    },
+    {
+      "name": "Build the runner",
+      "type": "command",
+      "folder": "lesson-runner",
+      "exe": "cmake",
+      "args": [ "--build", "build" ],
+      "pathPrepend": [ "C:\\msys64\\ucrt64\\bin" ],
+      "requires": [ "msys2" ]
+    },
+    {
+      "name": "Editor C settings",
+      "type": "write-file",
+      "path": ".vscode\\c_cpp_properties.json",
+      "ifMissing": true,
+      "content": {
+        "version": 4,
+        "configurations": [
+          {
+            "name": "MSYS2 UCRT64 gcc",
+            "compileCommands": "${workspaceFolder}/lesson-runner/build/compile_commands.json",
+            "includePath": [ "${default}", "${workspaceFolder}/**", "${workspaceFolder}/resources/vendor/cjson" ],
+            "cStandard": "c17",
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
+          }
+        ]
+      }
+    }
+  ],
+  "launch": {
+    "ide": "vscode",
+    "kind": "exe",
+    "file": "lesson-runner\\build\\lesson-runner.exe",
+    "folder": "lesson-runner"
+  }
+}
