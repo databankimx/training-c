@@ -200,6 +200,22 @@ function Update-SessionPath {
     $env:Path = "$machine;$user"
 }
 
+# Adds a folder to the user PATH, so programs started later (such as VS Code) can find it. Also adds it to this
+# session. Does nothing when the folder is already listed.
+function Add-UserPathEntry([string]$Folder) {
+    $wanted = $Folder.TrimEnd("\")
+    $user = [Environment]::GetEnvironmentVariable("Path", "User")
+    $entries = @($user -split ";" | Where-Object { $_ })
+    $listed = @($entries | Where-Object { $_.TrimEnd("\") -ieq $wanted })
+    if ($listed.Count -eq 0) {
+        $entries += $Folder
+        [Environment]::SetEnvironmentVariable("Path", ($entries -join ";"), "User")
+        Write-Log "Added $Folder to the user PATH. Restart VS Code to pick it up."
+    }
+    $sessionListed = @(($env:Path -split ";") | Where-Object { $_.TrimEnd("\") -ieq $wanted })
+    if ($sessionListed.Count -eq 0) { $env:Path = "$Folder;$env:Path" }
+}
+
 # Returns the output of a command as one string, or $null when the command isn't found or fails to run.
 function Get-CommandOutput([string]$Exe, [string[]]$CommandArguments = @()) {
     $command = Get-Command $Exe -ErrorAction SilentlyContinue
@@ -255,6 +271,24 @@ function Invoke-Quiet([string]$Exe, [string[]]$CommandArguments, [string]$Workin
     }
     $code = $LASTEXITCODE
     foreach ($line in $output) { Write-LogOnly ("   " + $line) }
+    return [pscustomobject]@{ Code = $code; Output = $output }
+}
+
+# Like Invoke-Quiet, but prints each line as it arrives, so slow steps show progress. Lines also go to the log.
+function Invoke-Streamed([string]$Exe, [string[]]$CommandArguments, [string]$WorkingDirectory = $null) {
+    $output = @()
+    if ($WorkingDirectory) { Push-Location -LiteralPath $WorkingDirectory }
+    try {
+        $output = @(& $Exe @CommandArguments 2>&1 | ForEach-Object {
+            $line = "$_"
+            Write-Host ("      " + $line) -ForegroundColor DarkGray
+            Write-LogOnly ("   " + $line)
+            $line
+        })
+    } finally {
+        if ($WorkingDirectory) { Pop-Location }
+    }
+    $code = $LASTEXITCODE
     return [pscustomobject]@{ Code = $code; Output = $output }
 }
 
@@ -555,21 +589,51 @@ function Install-Maven($Spec) {
 function Install-Msys2($Spec, [bool]$Upgrade) {
     $root = Get-Prop $Spec "root" "C:\msys64"
     $bash = Join-Path $root "usr\bin\bash.exe"
-    if (-not (Test-Path -LiteralPath $bash)) {
+    $freshInstall = -not (Test-Path -LiteralPath $bash)
+    if ($freshInstall) {
         Invoke-Winget @("install", "-e", "--id", "MSYS2.MSYS2", "--silent", "--accept-package-agreements", "--accept-source-agreements")
     }
     if (-not (Test-Path -LiteralPath $bash)) { throw "MSYS2 was installed, but it isn't in $root." }
-    if ($Upgrade) {
-        & $bash -lc "pacman -Syu --noconfirm" | Out-Null
+
+    # A brand-new MSYS2 needs its package signing keys before pacman can install anything. This first run is slow
+    # and prints nothing, so say so first. Later runs skip it because the keys already exist.
+    $gnupg = Join-Path $root "etc\pacman.d\gnupg"
+    $keysReady = (Test-Path -LiteralPath (Join-Path $gnupg "pubring.kbx")) -or (Test-Path -LiteralPath (Join-Path $gnupg "pubring.gpg"))
+    if (-not $keysReady) {
+        Write-Host "      MSYS2 is creating its package keys (first run). This can take several minutes." -ForegroundColor DarkGray
+        $init = Invoke-Quiet $bash @("-lc", "pacman-key --init && pacman-key --populate msys2")
+        if ($init.Code -ne 0) {
+            Show-FailureTail $init
+            throw "MSYS2 couldn't create its package keys (exit $($init.Code))."
+        }
+    }
+
+    # MSYS2 says to run "pacman -Syu" on a new install and after an upgrade. Core updates can ask for a rerun,
+    # so try up to three passes and stop at the first success.
+    if ($freshInstall -or $Upgrade) {
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            Write-Host "      Updating MSYS2 packages (pass $attempt of 3)." -ForegroundColor DarkGray
+            $sync = Invoke-Streamed $bash @("-lc", "pacman -Syu --noconfirm")
+            if ($sync.Code -eq 0) { break }
+            if ($attempt -eq 3) {
+                Show-FailureTail $sync
+                throw "MSYS2 package update failed (exit $($sync.Code))."
+            }
+        }
     }
     $packages = @(Get-Prop $Spec "packages" @())
     if ($packages.Count -gt 0) {
-        $result = Invoke-Quiet $bash @("-lc", ("pacman -S --needed --noconfirm " + ($packages -join " ")))
+        Write-Host "      Installing the MSYS2 packages." -ForegroundColor DarkGray
+        $result = Invoke-Streamed $bash @("-lc", ("pacman -S --needed --noconfirm " + ($packages -join " ")))
         if ($result.Code -ne 0) {
             Show-FailureTail $result
             throw "pacman couldn't install the MSYS2 packages (exit $($result.Code))."
         }
     }
+
+    # VS Code and other programs read the user PATH, so the compiler folder goes there too. A step's pathPrepend
+    # only lasts for that step, so without this the Debug button can't find gcc or gdb.
+    Add-UserPathEntry (Join-Path $root "ucrt64\bin")
 }
 
 function Install-VsCodeExtensions($Spec) {
@@ -813,7 +877,7 @@ function Invoke-CommandStep($Step, [string]$Name) {
     $savedPath = $env:Path
     try {
         if ($prepend.Count -gt 0) { $env:Path = (($prepend -join ";") + ";" + $env:Path) }
-        $result = Invoke-Quiet $exe $cmdArgs $folder
+        $result = Invoke-Streamed $exe $cmdArgs $folder
     } finally {
         $env:Path = $savedPath
     }
