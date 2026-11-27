@@ -24,8 +24,11 @@
     Step types: npm (command: ci or install), npm-run (script, for example test), python-venv (path, requirements),
     command (folder, exe, args, optional check, optional pathPrepend), copy (source, dest, backup),
     msbuild-restore (solution), write-file (path, content or contentFrom, optional ifMissing), dotnet-build (projects),
-    download (url, path, and optional extract "zip" with folder).
-    The launch section takes kind "electron" (the runner's Electron app in folder) or "exe" (a built program at file).
+    download (url, path, and optional extract "zip" with folder), verify-hashes (manifest: checks the files in the
+    manifest's folder against its SHA-256 list, and fails on a missing, changed, or unlisted file).
+    The launch section takes kind "command" (a long-running program, such as cmd.exe running npm run tauri dev, started
+    in the background with "exe", "args" and "folder"), kind "electron" (the runner's Electron app in folder, optionally opening "main", a script
+    path such as lesson-runner/main.js, instead of the folder itself) or "exe" (a built program at file).
 
     Every step may set: name, type, folder, enabled, requires (install names), runTests, elevated.
     A step or install that needs an elevated PowerShell makes the script stop before anything is installed.
@@ -81,6 +84,7 @@ $DefaultWinget = @{
     "dotnet"      = "Microsoft.DotNet.SDK.10"
     "jdk"         = "EclipseAdoptium.Temurin.25.JDK"
     "vscode"      = "Microsoft.VisualStudioCode"
+    "notepadPlusPlus" = "Notepad++.Notepad++"
 }
 
 $script:Config = $null
@@ -132,9 +136,7 @@ function Set-Outcome([string]$Name, [string]$Status, [string]$Detail = "") {
     Write-LogOnly ("{0}: {1} {2}" -f $Name, $Status, $Detail)
     if ($Status -eq "failed" -or $Status -eq "warning") {
         [void]$script:Problems.Add([pscustomobject]@{ Name = $Name; Status = $Status; Detail = $Detail })
-        $color = "Red"
-        if ($Status -eq "warning") { $color = "Yellow" }
-        Write-Log ("   {0}: {1}. {2}" -f $Name, $Status, $Detail) $color
+        # Printed once, in the summary at the end, so nothing appears twice.
     } else {
         $color = "Green"
         if ($Status -eq "skipped") { $color = "DarkGray" }
@@ -289,11 +291,13 @@ function Invoke-Streamed([string]$Exe, [string[]]$CommandArguments, [string]$Wor
         if ($WorkingDirectory) { Pop-Location }
     }
     $code = $LASTEXITCODE
-    return [pscustomobject]@{ Code = $code; Output = $output }
+    return [pscustomobject]@{ Code = $code; Output = $output; Streamed = $true }
 }
 
 # Prints the last lines of a failed command, so the cause is visible without opening the log.
+# Streamed output is already on screen, so it isn't printed a second time.
 function Show-FailureTail($Result, [int]$Lines = 25) {
+    if ($Result.PSObject.Properties['Streamed']) { return }
     $tail = @($Result.Output | Select-Object -Last $Lines)
     foreach ($line in $tail) { Write-Host ("      " + $line) -ForegroundColor DarkGray }
 }
@@ -440,6 +444,49 @@ function Confirm-BuildTools($Spec) {
     }
 }
 
+# Loads the C++ compiler environment (vcvars64.bat) into this session, so native modules can be compiled.
+function Import-BuildToolsEnvironment {
+    $vswhere = Get-VsWhere
+    if (-not $vswhere) { return $false }
+    $install = (& $vswhere -products * -requires "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" -latest -property installationPath 2>$null | Select-Object -First 1)
+    if (-not $install) { return $false }
+    $vcvars = Join-Path $install "VC\Auxiliary\Build\vcvars64.bat"
+    if (-not (Test-Path -LiteralPath $vcvars)) { return $false }
+    $lines = cmd /c "`"$vcvars`" >nul 2>&1 && set"
+    foreach ($line in $lines) {
+        if ($line -match "^([^=]+)=(.*)$") { Set-Item -Path "env:$($Matches[1])" -Value $Matches[2] }
+    }
+    return $true
+}
+
+# Electron's fallback. When Electron's binary won't download, the C++ Build Tools are installed if they're missing,
+# the compiler environment is loaded, native modules are rebuilt, and Electron's installer runs again.
+# Returns $true when the binary is in place afterwards.
+function Invoke-ElectronBuildToolsFallback([string]$Folder, [string]$Npm, [string]$Electron) {
+    Write-Host "      Falling back to the C++ Build Tools for Electron." -ForegroundColor DarkGray
+    try {
+        if (-not (Test-VsWorkload "Microsoft.VisualStudio.Component.VC.Tools.x86.x64")) {
+            if (-not (Test-Administrator)) {
+                Write-Host "      The C++ Build Tools are needed for this fallback, and installing them needs an elevated PowerShell. Run this script as Administrator to try again." -ForegroundColor Yellow
+                return $false
+            }
+            Write-Host "      Installing the C++ Build Tools. This is a large download and can take a long time." -ForegroundColor DarkGray
+            Confirm-BuildTools $null
+        }
+        if (-not (Import-BuildToolsEnvironment)) {
+            Write-LogOnly "The C++ compiler environment couldn't be loaded, so the Electron rebuild was skipped."
+            return $false
+        }
+        $null = Invoke-Streamed $Npm @("rebuild") $Folder
+        $node = Find-Exe "node" @("$env:ProgramFiles\nodejs\node.exe")
+        if ($node) { $null = Invoke-Streamed $node @("install.js") $Electron }
+    } catch {
+        Write-LogOnly ("Electron fallback failed: " + $_.Exception.Message)
+        return $false
+    }
+    return (Test-Path -LiteralPath (Join-Path $Electron "dist\electron.exe"))
+}
+
 function Confirm-VcRuntime($Spec) {
     $system = [Environment]::GetFolderPath("System")
     $present = (Test-Path -LiteralPath (Join-Path $system "VCRUNTIME140.dll")) -and (Test-Path -LiteralPath (Join-Path $system "MSVCP140.dll"))
@@ -493,6 +540,9 @@ function Get-ProgramVersion([string]$Name, $Spec) {
                 Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
             if ($java) {
                 $script:InstallPaths["jdk"] = Split-Path -Parent (Split-Path -Parent $java)
+                # Maven (mvn.cmd) and other Java tools refuse to run without JAVA_HOME. Point it at the JDK found here,
+                # so every later step in this run, and the runner it starts, uses the same JDK.
+                $env:JAVA_HOME = $script:InstallPaths["jdk"]
                 return (Get-CommandOutput $java @("-version"))
             }
             return $null
@@ -518,6 +568,14 @@ function Get-ProgramVersion([string]$Name, $Spec) {
                 if (Test-Path -LiteralPath $path) { $text = Get-CommandOutput $path @("--version") }
             }
             return $text
+        }
+        "notepadPlusPlus" {
+            $paths = @(
+                (Join-Path $env:ProgramFiles "Notepad++\notepad++.exe"),
+                (Join-Path ${env:ProgramFiles(x86)} "Notepad++\notepad++.exe"))
+            $exe = $paths | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+            if (-not $exe) { return $null }
+            return (Get-Item -LiteralPath $exe).VersionInfo.ProductVersion
         }
         "vscode" {
             $text = Get-CommandOutput "code" @("--version")
@@ -636,6 +694,41 @@ function Install-Msys2($Spec, [bool]$Upgrade) {
     Add-UserPathEntry (Join-Path $root "ucrt64\bin")
 }
 
+# Adds "Open with Code" to the Explorer right-click menu for files, folders, and the background of a folder.
+# Written under HKEY_CURRENT_USER, so it needs no administrator rights and applies to the current user only.
+function Install-VsCodeContextMenu {
+    try {
+        $exe = @(
+            (Join-Path $env:LOCALAPPDATA "Programs\Microsoft VS Code\Code.exe"),
+            (Join-Path $env:ProgramFiles "Microsoft VS Code\Code.exe")) |
+            Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+        if (-not $exe) {
+            Set-Outcome "vscode-context-menu" "warning" "Code.exe wasn't found, so the Open with Code menu entries weren't added."
+            return
+        }
+        # The keys are written with .NET. The PowerShell registry provider treats * in a key name as a wildcard, and
+        # New-Item and New-ItemProperty don't take -LiteralPath.
+        $entries = @(
+            @{ Path = "Software\Classes\*\shell\VSCode";                    Argument = "%1" },
+            @{ Path = "Software\Classes\Directory\shell\VSCode";            Argument = "%1" },
+            @{ Path = "Software\Classes\Directory\Background\shell\VSCode"; Argument = "%V" }
+        )
+        $hkcu = [Microsoft.Win32.Registry]::CurrentUser
+        foreach ($entry in $entries) {
+            $shellKey = $hkcu.CreateSubKey($entry.Path)
+            $shellKey.SetValue("", "Open w&ith VS Code")
+            $shellKey.SetValue("Icon", "`"$exe`",0")
+            $shellKey.Close()
+            $commandKey = $hkcu.CreateSubKey($entry.Path + "\command")
+            $commandKey.SetValue("", "`"$exe`" `"$($entry.Argument)`"")
+            $commandKey.Close()
+        }
+        Set-Outcome "vscode-context-menu" "ok" "Open with Code added to the Explorer right-click menu for this user"
+    } catch {
+        Set-Outcome "vscode-context-menu" "warning" ("Couldn't add the Open with Code menu entries: " + $_.Exception.Message)
+    }
+}
+
 function Install-VsCodeExtensions($Spec) {
     $extensions = @(Get-Prop $Spec "extensions" @())
     if ($extensions.Count -eq 0) { return }
@@ -654,7 +747,7 @@ function Install-VsCodeExtensions($Spec) {
     if ($failed.Count -gt 0) {
         Set-Outcome "vscode-extensions" "warning" ("Couldn't install: " + ($failed -join ", "))
     } else {
-        Set-Outcome "vscode-extensions" "ok" ("Installed " + $extensions.Count)
+        Set-Outcome "vscode-extensions" "ok" ("Installed: " + ($extensions -join ", "))
     }
 }
 
@@ -728,7 +821,10 @@ function Invoke-InstallItem([string]$Name) {
             }
         }
 
-        if ($Name -eq "vscode") { Install-VsCodeExtensions $spec }
+        if ($Name -eq "vscode") {
+            Install-VsCodeExtensions $spec
+            Install-VsCodeContextMenu
+        }
     } catch {
         Set-Outcome $Name "failed" $_.Exception.Message
     }
@@ -802,6 +898,9 @@ function Invoke-NpmStep($Step, [string]$Name) {
             }
         }
         if (-not (Test-Path -LiteralPath $electronExe)) {
+            $null = Invoke-ElectronBuildToolsFallback $folder $npm $electron
+        }
+        if (-not (Test-Path -LiteralPath $electronExe)) {
             if ($cause) {
                 Set-Outcome $Name "warning" "Electron's zip extractor didn't load: $cause. The full cause chain is above and in the log."
             } else {
@@ -810,7 +909,11 @@ function Invoke-NpmStep($Step, [string]$Name) {
             return
         }
     }
-    Set-Outcome $Name "ok" $folder
+    if (Test-Path -LiteralPath $electronExe) {
+        Set-Outcome $Name "ok" "$folder (Electron binary present)"
+    } else {
+        Set-Outcome $Name "ok" $folder
+    }
 }
 
 function Invoke-NpmRunStep($Step, [string]$Name) {
@@ -860,6 +963,20 @@ function Invoke-PythonVenvStep($Step, [string]$Name) {
         if ($install.Code -ne 0) { Show-FailureTail $install; throw "pip install -r $requirements failed (exit $($install.Code))." }
     }
     Set-Outcome $Name "ok" $venv
+}
+
+# Looks for an environment variable (in the user's settings, or in this session). A missing variable is reported as a
+# warning, and the setup carries on. This step never fails the setup.
+function Invoke-CheckVariableStep($Step, [string]$Name) {
+    $variable = Get-Prop $Step "variable" $null
+    $message = Get-Prop $Step "message" "The environment variable $variable isn't set."
+    $value = [Environment]::GetEnvironmentVariable($variable, "User")
+    if (-not $value) { $value = [Environment]::GetEnvironmentVariable($variable, "Process") }
+    if ($value) {
+        Set-Outcome $Name "ok" "$variable is set"
+    } else {
+        Set-Outcome $Name "warning" $message
+    }
 }
 
 function Invoke-CommandStep($Step, [string]$Name) {
@@ -938,8 +1055,18 @@ function Invoke-MsBuildRestoreStep($Step, [string]$Name) {
     if (-not $vswhere) { throw "vswhere wasn't found, so MSBuild can't be located." }
     $msbuild = (& $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" 2>$null | Select-Object -First 1)
     if (-not $msbuild) { throw "MSBuild wasn't found in the Visual Studio installation." }
-    $result = Invoke-Quiet $msbuild @($solution, "/t:Restore", "/v:minimal", "/nologo")
-    if ($result.Code -ne 0) { Show-FailureTail $result; throw "MSBuild restore failed (exit $($result.Code))." }
+    $result = Invoke-Streamed $msbuild @($solution, "/t:Restore", "/v:minimal", "/nologo")
+    if ($result.Code -ne 0) {
+        # NuGet names each package it couldn't find. Those usually come from a private feed (such as the DataBank feed)
+        # that isn't configured, or that this account can't read. List them, so the summary says what to fix.
+        $text = ($result.Output -join "`n")
+        $missing = @([regex]::Matches($text, 'Unable to find package (\S+?)\. ') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+        if ($missing.Count -gt 0) {
+            throw ("restore couldn't find these NuGet packages: " + ($missing -join ", ") + ". They usually come from a private feed that isn't configured or can't be read. Check the feed's NuGet source and your access, then run this script again.")
+        }
+        Show-FailureTail $result
+        throw "MSBuild restore failed (exit $($result.Code))."
+    }
     Set-Outcome $Name "ok" "restored $solution"
 }
 
@@ -970,7 +1097,7 @@ function Invoke-DotnetBuildStep($Step, [string]$Name) {
     $failed = @()
     $projects = @(Get-Prop $Step "projects" @())
     foreach ($project in $projects) {
-        $result = Invoke-Quiet $dotnet @("build", (Join-Path $folder $project), "--nologo", "-v", "minimal")
+        $result = Invoke-Streamed $dotnet @("build", (Join-Path $folder $project), "--nologo", "-v", "minimal")
         if ($result.Code -ne 0) {
             Show-FailureTail $result
             $failed += $project
@@ -978,6 +1105,49 @@ function Invoke-DotnetBuildStep($Step, [string]$Name) {
     }
     if ($failed.Count -gt 0) { throw "dotnet build failed for: $($failed -join ', ')" }
     Set-Outcome $Name "ok" "$($projects.Count) project(s)"
+}
+
+# Checks files against an approved hash list. Each line of the manifest is a SHA-256 hash, two spaces, and a path
+# relative to the manifest's folder. Fails if an approved file is missing or changed, or if the folder has a file that
+# isn't in the list. The manifest itself is not checked.
+function Invoke-VerifyHashesStep($Step, [string]$Name) {
+    $manifest = Get-RepoPath (Get-Prop $Step "manifest" $null)
+    if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) { throw "No approved hash list at $manifest." }
+    $folder = Split-Path -Parent $manifest
+    $manifestName = Split-Path -Leaf $manifest
+
+    $approved = @{}
+    foreach ($line in Get-Content -LiteralPath $manifest) {
+        if ($line.Trim() -eq "") { continue }
+        $parts = $line -split "  ", 2
+        if ($parts.Count -ne 2) { throw "Malformed line in ${manifest}: $line" }
+        $approved[$parts[1].Replace('\', '/')] = $parts[0].ToLowerInvariant()
+    }
+
+    $problems = New-Object System.Collections.ArrayList
+    foreach ($relative in $approved.Keys) {
+        $path = Join-Path $folder ($relative -replace '/', '\')
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { [void]$problems.Add("missing: $relative"); continue }
+        $actual = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actual -ne $approved[$relative]) { [void]$problems.Add("changed: $relative") }
+    }
+
+    $folderFull = (Resolve-Path -LiteralPath $folder).Path.TrimEnd('\')
+    Get-ChildItem -LiteralPath $folder -Recurse -File | ForEach-Object {
+        $relative = $_.FullName.Substring($folderFull.Length).TrimStart('\').Replace('\', '/')
+        if ($relative -ne $manifestName -and -not $approved.ContainsKey($relative)) {
+            [void]$problems.Add("not approved: $relative")
+        }
+    }
+
+    if ($problems.Count -eq 0) {
+        Set-Outcome $Name "ok" "$($approved.Count) file(s) match the approved hashes"
+        return
+    }
+    $shown = @($problems | Select-Object -First 5) -join "; "
+    $more = ""
+    if ($problems.Count -gt 5) { $more = " and $($problems.Count - 5) more" }
+    throw "$($problems.Count) problem(s): $shown$more."
 }
 
 function Invoke-Step($Step) {
@@ -1007,6 +1177,8 @@ function Invoke-Step($Step) {
             "download"        { Invoke-DownloadStep $Step $name }
             "msbuild-restore" { Invoke-MsBuildRestoreStep $Step $name }
             "write-file"      { Invoke-WriteFileStep $Step $name }
+            "check-variable"  { Invoke-CheckVariableStep $Step $name }
+            "verify-hashes"   { Invoke-VerifyHashesStep $Step $name }
             "dotnet-build"    { Invoke-DotnetBuildStep $Step $name }
             default           { throw "Unknown step type '$type' in setup.json." }
         }
@@ -1029,6 +1201,16 @@ function Start-Runner($Launch) {
             (Join-Path $env:ProgramFiles "Microsoft VS Code\bin\code.cmd"))
         if ($code) { & $code $script:Root | Out-Null }
     }
+    if ($ide -eq "visualstudio") {
+        # Opens the solution in Visual Studio, with the file association that Windows uses for .sln files.
+        $solution = Get-RepoPath (Get-Prop $Launch "solution" $null)
+        if (Test-Path -LiteralPath $solution) {
+            Start-Process -FilePath $solution
+            Write-LogOnly "Opened $solution in Visual Studio."
+        } else {
+            Set-Outcome "visual-studio" "warning" "$solution wasn't found, so Visual Studio wasn't opened."
+        }
+    }
     if ((Get-Prop $Launch "kind" "") -eq "exe") {
         $file = Get-RepoPath (Get-Prop $Launch "file" $null)
         $logDir = Split-Path -Parent $script:LogFile
@@ -1041,12 +1223,24 @@ function Start-Runner($Launch) {
             Set-Outcome "lesson-runner" "warning" "$file isn't built yet, so the runner wasn't started."
         }
     }
+    if ((Get-Prop $Launch "kind" "") -eq "command") {
+        # A long-running command, such as npm run tauri dev. It runs in the background, and its output goes to the log
+        # folder, so the setup doesn't wait for it.
+        $exe = Get-Prop $Launch "exe" $null
+        $logDir = Split-Path -Parent $script:LogFile
+        Start-Process -FilePath $exe -ArgumentList @(Get-Prop $Launch "args" @()) -WorkingDirectory $folder -WindowStyle Hidden `
+            -RedirectStandardOutput (Join-Path $logDir "lesson-runner-out.log") `
+            -RedirectStandardError (Join-Path $logDir "lesson-runner-err.log")
+        Write-LogOnly "Started $exe in $folder."
+    }
     if ((Get-Prop $Launch "kind" "") -eq "electron") {
         $exe = Join-Path $folder "node_modules\electron\dist\electron.exe"
+        # npm hoists node_modules to the workspace root when the runner is a workspace, so check the repository root too.
+        if (-not (Test-Path -LiteralPath $exe)) { $exe = Join-Path $script:Root "node_modules\electron\dist\electron.exe" }
         if (Test-Path -LiteralPath $exe) {
             # The runner's output goes to files. Without this, Electron writes its messages into this console and holds it.
             $logDir = Split-Path -Parent $script:LogFile
-            Start-Process -FilePath $exe -ArgumentList "." -WorkingDirectory $folder `
+            Start-Process -FilePath $exe -ArgumentList (Get-Prop $Launch "main" ".") -WorkingDirectory $folder `
                 -RedirectStandardOutput (Join-Path $logDir "lesson-runner-out.log") `
                 -RedirectStandardError (Join-Path $logDir "lesson-runner-err.log")
             Write-LogOnly "Started the lesson runner from $folder."
@@ -1117,11 +1311,11 @@ function Invoke-Bootstrap {
 # setup.json checks
 # ---------------------------------------------------------------------------------------------------------------------
 
-$KnownInstalls = @("git", "powershell7", "node", "python", "dotnet", "jdk", "maven", "msys2", "rust", "visualStudio", "buildTools", "vcRuntime", "vscode")
-$KnownStepTypes = @("npm", "npm-run", "python-venv", "command", "copy", "msbuild-restore", "write-file", "dotnet-build", "download")
+$KnownInstalls = @("git", "powershell7", "node", "python", "dotnet", "jdk", "maven", "msys2", "rust", "visualStudio", "buildTools", "vcRuntime", "vscode", "notepadPlusPlus")
+$KnownStepTypes = @("npm", "npm-run", "python-venv", "command", "copy", "msbuild-restore", "write-file", "dotnet-build", "download", "verify-hashes", "check-variable")
 $KnownRootSettings = @("schemaVersion", "name", "folder", "repoUrl", "branch", "baseDirectory", "runTests", "installs", "steps", "launch")
 $KnownInstallSettings = @("install", "pinned", "sideBySide", "orNewer", "winget", "override", "root", "url", "workloads", "packages", "extensions")
-$KnownStepSettings = @("name", "type", "folder", "enabled", "requires", "runTests", "command", "script", "path", "requirements", "exe", "args", "check", "source", "dest", "backup", "solution", "content", "contentFrom", "projects", "elevated", "url", "extract", "pathPrepend", "ifMissing")
+$KnownStepSettings = @("name", "type", "folder", "enabled", "requires", "runTests", "command", "script", "path", "requirements", "exe", "args", "check", "source", "dest", "backup", "solution", "content", "contentFrom", "projects", "elevated", "url", "extract", "pathPrepend", "ifMissing", "manifest", "variable", "message")
 
 function Test-IsText($Value) { return ($Value -is [string]) }
 function Test-IsFlag($Value) { return ($Value -is [bool]) }
@@ -1141,7 +1335,9 @@ function Get-RequiredStepSettings([string]$Type) {
         "copy"            { return @("source", "dest") }
         "msbuild-restore" { return @("solution") }
         "write-file"      { return @("path") }
+        "check-variable"  { return @("variable") }
         "download"        { return @("url", "path") }
+        "verify-hashes"   { return @("manifest") }
         default           { return @() }
     }
 }
@@ -1252,6 +1448,8 @@ function Get-SchemaProblems($Config) {
         [void]$problems.Add("'steps' must be a list, in [ ... ].")
     }
     $number = 0
+    # A step can require a program from "installs" or the name of a step that comes before it.
+    $earlierStepNames = New-Object System.Collections.Generic.List[string]
     foreach ($step in @($steps)) {
         $label = "steps[$number]"
         $number++
@@ -1265,6 +1463,7 @@ function Get-SchemaProblems($Config) {
         } else {
             [void]$problems.Add("$label needs a 'name', in text.")
         }
+        if (Test-IsText $stepName) { $earlierStepNames.Add($stepName) }
         foreach ($setting in $step.PSObject.Properties) {
             if ($KnownStepSettings -notcontains $setting.Name) {
                 [void]$problems.Add("$label has '$($setting.Name)', which isn't a step setting.")
@@ -1297,8 +1496,8 @@ function Get-SchemaProblems($Config) {
                 [void]$problems.Add("$label 'requires' must be a list of program names.")
             } else {
                 foreach ($need in @($requires)) {
-                    if ($KnownInstalls -notcontains $need) {
-                        [void]$problems.Add("$label requires '$need', which isn't a program in installs.")
+                    if (($KnownInstalls -notcontains $need) -and ($earlierStepNames -notcontains $need)) {
+                        [void]$problems.Add("$label requires '$need', which isn't a program in installs or an earlier step.")
                     }
                 }
             }
@@ -1311,9 +1510,13 @@ function Get-SchemaProblems($Config) {
             [void]$problems.Add("'launch' must be an object.")
         } else {
             $ide = Get-Prop $launch "ide" "none"
-            if (@("none", "vscode") -notcontains $ide) { [void]$problems.Add("launch.ide must be 'none' or 'vscode'.") }
+            if (@("none", "vscode", "visualstudio") -notcontains $ide) { [void]$problems.Add("launch.ide must be 'none', 'vscode', or 'visualstudio'.") }
+            if ($ide -eq "visualstudio" -and -not (Test-IsText (Get-Prop $launch "solution" $null))) {
+                [void]$problems.Add("launch.ide 'visualstudio' needs 'solution', the .sln path in the repository.")
+            }
             $kind = Get-Prop $launch "kind" "none"
-            if (@("none", "electron", "exe") -notcontains $kind) { [void]$problems.Add("launch.kind must be 'none', 'electron', or 'exe'.") }
+            if (@("none", "electron", "exe", "command") -notcontains $kind) { [void]$problems.Add("launch.kind must be 'none', 'electron', 'exe', or 'command'.") }
+            if ($kind -eq "command" -and -not (Get-Prop $launch "exe" $null)) { [void]$problems.Add("launch.kind 'command' needs 'exe', the program to run.") }
             if ($kind -eq "exe" -and -not (Test-IsText (Get-Prop $launch "file" $null))) {
                 [void]$problems.Add("launch.kind 'exe' needs 'file', the built program's path in the repository.")
             }
@@ -1529,7 +1732,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7 -and -not $RelaunchedInPowerShell7 -an
     exit $LASTEXITCODE
 }
 
-foreach ($name in @("node", "python", "dotnet", "jdk", "maven", "msys2", "rust", "visualStudio", "buildTools", "vcRuntime", "vscode")) {
+foreach ($name in @("node", "python", "dotnet", "jdk", "maven", "msys2", "rust", "visualStudio", "buildTools", "vcRuntime", "vscode", "notepadPlusPlus")) {
     Invoke-InstallItem $name
 }
 
@@ -1548,8 +1751,13 @@ if ($script:RunTestsEffective) {
 }
 
 if (-not $NoLaunch) {
-    Write-Stage "Starting the lesson runner"
-    Start-Runner (Get-Prop $script:Config "launch" $null)
+    # A runner started after a failed step would open a broken window, so it's held back until the setup passes.
+    if (@($script:Problems | Where-Object { $_.Status -eq "failed" }).Count -gt 0) {
+        Write-Stage "Not starting the lesson runner, because a step failed. Fix it, then run the script again."
+    } else {
+        Write-Stage "Starting the lesson runner"
+        Start-Runner (Get-Prop $script:Config "launch" $null)
+    }
 }
 
 Write-Log ""
@@ -1569,11 +1777,8 @@ $warnings = @($script:Problems | Where-Object { $_.Status -eq "warning" })
 if ($failed.Count -eq 0 -and $warnings.Count -eq 0) {
     Write-Log "Setup finished with no problems." "Green"
 } else {
-    Write-Log "Setup finished with problems:" "Yellow"
-    foreach ($item in $script:Problems) {
-        if ($item.Status -eq "failed") { $color = "Red" } else { $color = "Yellow" }
-        Write-Log ("   [{0}] {1}: {2}" -f $item.Status, $item.Name, $item.Detail) $color
-    }
+    # The problems are already listed in the summary above, so this line only counts them.
+    Write-Log ("Setup finished with {0} failure(s) and {1} warning(s), listed in the summary above." -f $failed.Count, $warnings.Count) "Yellow"
 }
 Write-Log "Full log: $script:LogFile"
 

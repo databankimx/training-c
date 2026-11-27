@@ -3,10 +3,11 @@
   "name": "Working With C",
   "folder": "training-c",
   "repoUrl": "https://github.com/databankimx/training-c.git",
-  "branch": "main",
+  "branch": "dev",
   "baseDirectory": "C:\\Development\\training",
   "runTests": false,
   "installs": {
+    "notepadPlusPlus": { "install": true, "winget": "Notepad++.Notepad++" },
     "git": { "install": true, "winget": "Git.Git" },
     "powershell7": { "install": true, "pinned": "7", "winget": "Microsoft.PowerShell" },
     "msys2": {
