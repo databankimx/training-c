@@ -19,27 +19,110 @@ Security software on managed machines is set up to allow those folders when they
 
 ## Quick setup with the script
 
-`setup.ps1` installs what's missing, clones the repository if you don't have it yet, checks the toolchain, downloads the vendored libraries, makes the runner's icon, and builds the runner. It's safe to run more than once.
+### What gets installed
 
-Open **PowerShell as Administrator**, go to the folder where you saved `setup.ps1`, and run:
+By default, the setup installs:
+
+* Notepad++
+* Git
+* PowerShell 7
+* MSYS2
+* VS Code, with the extensions ms-vscode.cpptools-extension-pack
+
+The setup then runs these steps: WebView2 SDK; cJSON source; Title-bar icon; Configure the runner; Build the runner; Editor C settings. At the end it opens the repository in VS Code and starts the lesson runner program.
+
+### Getting started
+
+There are three methods available to set up this tutorial. They are currently Windows-only.
+
+#### Full Automation (if you don't have Git currently set up)
+
+This process will install Git and copy the repository to a subfolder of `C:\Development\training` and install all necessary software and extensions for the tutorial's lesson runner.
+
+1. Obtain the tutorial's GitHub slug name, which is `training-c`
+2. Open PowerShell using "Run as Administrator"
+3. Run the script below
 
 ```pwsh
-powershell -ExecutionPolicy Bypass -File .\setup.ps1
+# Obtain the load tutorial script
+irm https://raw.githubusercontent.com/databankimx/training-shared-template/main/load-tutorial.ps1 -OutFile "$env:TEMP\load-tutorial.ps1"
+
+# Perform automated setup
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\load-tutorial.ps1" -RepoUrl https://github.com/databankimx/training-c.git
 ```
 
-The `-ExecutionPolicy Bypass` part lets this one script run. It doesn't change any setting on your machine.
+#### Automated Setup from Local Repo (assumes you already have Git installed and set up)
 
-By default, the script:
+In this process, you pull the existing repository and then run its setup script, which installs all necessary software and extensions for the tutorial's lesson runner.
 
-- installs **Git** and **MSYS2** with winget, if they're missing
-- clones the repository into `C:\Development\training\training-c`, if the script isn't already inside it, and continues from the clone
-- installs the MSYS2 packages it's missing, and updates MSYS2 with `pacman -Syu`
+1. Obtain the tutorial's GitHub slug name, which is `training-c`
+2. Open PowerShell using "Run as Administrator"
+3. If you will use the default base directory `C:\Development\training`, run the following:
 
-An Administrator window is needed, because the script installs by default. To check only, without installing anything, run `powershell -ExecutionPolicy Bypass -File .\setup.ps1 -InstallMissing:$false`. It stops and shows what's missing, and the command to fix it. Company policy can block installs, in which case the script says so, and you'll need IT.
+```pwsh
+# Create the base folder if it doesn't exist yet
+New-Item -ItemType Directory -Force -Path C:\Development\training | Out-Null
+```
 
-When the script finishes, it prints a summary. Steps 1 to 5 below cover the same work, if you need to see what the script does, or want to run one part by hand.
+4. Clone the repository. If you're using a different base directory, replace `C:\Development\training` with your path:
 
----
+```pwsh
+# Go there and clone the tutorial
+cd C:\Development\training
+git clone https://github.com/databankimx/training-c.git
+cd training-c
+```
+
+5. If desired, edit the setup configuration, which determines what software is installed automatically (see "Change what gets installed" below)
+
+```pwsh
+# Optional: edit setup.json before installations
+notepad setup.json
+```
+
+6. Save the configuration if you edited it, then run the setup script
+
+##### If using the default base path, run this:
+
+```pwsh
+# Run the setup
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+```
+
+##### If using a different base path, replace `<BASE_DIR>` with your path and run this:
+
+```pwsh
+# Run the setup
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -BaseDirectory <BASE_DIR>
+```
+
+#### Manual Setup from Local Repo
+
+If you want to do everything manually, you can pull the repository and set up software on your own.
+
+1. Obtain the tutorial's GitHub slug name, which is `training-c`
+2. Run the script below
+
+```pwsh
+git clone https://github.com/databankimx/training-c.git
+```
+
+3. Review README.md and QUICKSTART.md in the repository for instructions for manual setup.
+
+### Switches and notes
+
+* `-SkipInstall` checks what's installed and installs nothing.
+* `-NoLaunch` runs the setup but doesn't open VS Code or start the runner.
+* Installing uses winget. If winget isn't available, install **App Installer** from the Microsoft Store first. Company policy can block installs, in which case the script stops and you'll need IT.
+* If an install needs administrator rights, the script stops before installing anything and asks you to run it again from an Administrator PowerShell window.
+
+### Change what gets installed
+
+The settings are in `setup.json`, in the repository folder. Open it in any text editor:
+
+* Set an install's `"install"` to `true` to include it, or `false` to skip it.
+* `"pinned"` sets the version. `"extensions"` lists the VS Code extensions to add.
+* Save the file, then run `setup.ps1` again. It skips what's already installed.
 
 ## 1. Install MSYS2
 
